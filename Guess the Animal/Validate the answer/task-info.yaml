@@ -398,18 +398,10 @@ files:
   learner_created: false
 - name: src/animals/Main.java
   visible: true
-  text: |
-    package animals;
-
-    public class Main {
-    }
-  learner_created: false
-- name: task/src/animals/Main.java
+  learner_created: true
+- name: src/animals/Animal.java
   visible: true
   learner_created: true
-- name: task/src/animals/Animal.java
-  visible: true
-  learner_created: true
-feedback_link: https://hyperskill.org/projects/132/stages/703/implement#comment
+feedback_link: https://hyperskill.org/learn/step/11079#comment
 status: Failed
 record: -1

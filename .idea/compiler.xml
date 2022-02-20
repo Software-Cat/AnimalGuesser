@@ -15,9 +15,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="17">
-      <module name="AnimalGuesser.Guess_the_Animal-task-task.main" target="11" />
-      <module name="AnimalGuesser.Guess_the_Animal-task.main" target="11" />
-      <module name="AnimalGuesser.util.main" target="11" />
+      <module name="AnimalGuesser.Guess_the_Animal-task-task.main" target="17" />
     </bytecodeTargetLevel>
   </component>
 </project>
