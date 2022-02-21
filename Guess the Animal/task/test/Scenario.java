@@ -14,10 +14,11 @@ import static org.hyperskill.hstest.testcase.CheckResult.correct;
 import static org.hyperskill.hstest.testcase.CheckResult.wrong;
 
 public class Scenario {
-    private TestedProgram main;
-    private String output = "";
+
     private final File dataFile;
     private final File scriptFile;
+    private TestedProgram main;
+    private String output = "";
 
     Scenario(String name) {
         dataFile = new File("test/" + name + ".data.yaml");

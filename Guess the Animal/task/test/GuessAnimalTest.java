@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.stream.Stream;
 
 public class GuessAnimalTest extends StageTest<String> {
+
     private static final int RUNS_COUNT = 10;
 
     final String[] script = new String[]{

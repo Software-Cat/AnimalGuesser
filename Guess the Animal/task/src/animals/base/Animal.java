@@ -1,4 +1,4 @@
-package animals;
+package animals.base;
 
 import animals.linguistics.NounPhrase;
 import org.jetbrains.annotations.NotNull;

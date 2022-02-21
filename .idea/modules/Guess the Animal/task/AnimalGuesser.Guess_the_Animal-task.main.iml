@@ -5,6 +5,7 @@
     <exclude-output />
     <content url="file://$MODULE_DIR$/../../../../Guess the Animal/task/src">
       <sourceFolder url="file://$MODULE_DIR$/../../../../Guess the Animal/task/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../../../../Guess the Animal/task/src/generated" isTestSource="false" generated="true" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

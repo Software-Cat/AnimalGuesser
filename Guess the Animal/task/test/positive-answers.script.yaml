@@ -14,7 +14,7 @@
 #
 # Here we substitute all values from the data file
 #
-- [input, "{0}"]
+- [ input, "{0}" ]
 
 - - contains
   - "You answered: Yes"
