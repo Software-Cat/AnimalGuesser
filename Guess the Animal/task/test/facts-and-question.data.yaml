@@ -1,0 +1,55 @@
+#
+# This is a data file to test generated facts and a question
+#
+
+# --- user input ---
+# The first animal
+# The second animal
+# The statement
+# Is the statement correct for the second animal?
+
+# --- expected output ---
+# The fact for the first animal
+# The fact for the second animal
+# The closed question to distinguishes one animal from other
+---
+- - cat
+  - shark
+  - it is a mammal
+  - no
+  - "The cat is a mammal."
+  - "The shark isn't a mammal."
+  - "Is it a mammal?"
+
+- - wolf
+  - hare
+  - it is a shy animal
+  - yes
+  - "The wolf isn't a shy animal."
+  - "The hare is a shy animal."
+  - "Is it a shy animal?"
+
+
+- - wolf
+  - fox
+  - it has a long bushy tail
+  - yes
+  - "The wolf doesn't have a long bushy tail."
+  - "The fox has a long bushy tail."
+  - "Does it have a long bushy tail?"
+
+- - dog
+  - cat
+  - it can climb trees
+  - yes
+  - "The dog can't climb trees."
+  - "The cat can climb trees."
+  - "Can it climb trees?"
+
+- - dog
+  - fox
+  - it is living in the forest
+  - yes
+  - "The dog isn't living in the forest."
+  - "The fox is living in the forest."
+  - "Is it living in the forest?"

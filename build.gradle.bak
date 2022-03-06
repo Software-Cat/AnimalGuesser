@@ -3,7 +3,6 @@ apply plugin: 'hyperskill'
 subprojects {
     apply plugin: 'application'
     apply plugin: 'java'
-    apply plugin: 'idea'
 
     def userJava = Integer.parseInt(JavaVersion.current().getMajorVersion())
     def hsJava = Integer.parseInt(hs.java.version)

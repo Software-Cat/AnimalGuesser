@@ -8,9 +8,21 @@
         <processorPath useClasspath="false">
           <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.22/9c08ea24c6eb714e2d6170e8122c069a0ba9aacf/lombok-1.18.22.jar" />
         </processorPath>
+        <module name="AnimalGuesser.Guess_the_Animal-task-build-generated-sources-headers-java.test" />
+        <module name="AnimalGuesser.Guess_the_Animal-task-build-tmp.test" />
+        <module name="AnimalGuesser.Guess_the_Animal-task-build-test-results.main" />
+        <module name="AnimalGuesser.Guess_the_Animal-task-build-reports-tests.main" />
+        <module name="AnimalGuesser.Guess_the_Animal-task-build-test-results.test" />
+        <module name="AnimalGuesser.Guess_the_Animal-task-build-generated-sources-annotationProcessor-java.main" />
         <module name="AnimalGuesser.Guess_the_Animal-task.test" />
-        <module name="AnimalGuesser.util.main" />
+        <module name="AnimalGuesser.Guess_the_Animal-task-build-reports-tests.test" />
         <module name="AnimalGuesser.util.test" />
+        <module name="AnimalGuesser.Guess_the_Animal-task-build-generated-sources-annotationProcessor-java.test" />
+        <module name="AnimalGuesser.Guess_the_Animal-task-build-classes-java.main" />
+        <module name="AnimalGuesser.Guess_the_Animal-task-build-tmp.main" />
+        <module name="AnimalGuesser.Guess_the_Animal-task-build-generated-sources-headers-java.main" />
+        <module name="AnimalGuesser.util.main" />
+        <module name="AnimalGuesser.Guess_the_Animal-task-build-classes-java.test" />
         <module name="AnimalGuesser.Guess_the_Animal-task.main" />
       </profile>
     </annotationProcessing>

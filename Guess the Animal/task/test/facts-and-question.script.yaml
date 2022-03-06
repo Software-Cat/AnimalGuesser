@@ -1,0 +1,28 @@
+#
+# This script to test generation of facts and a question
+#
+---
+- [start]
+#
+# Here we send to the input the names of two animals and the statement.
+#
+- [input, "{0}"]  # The first animal
+- [input, "{1}"]  # The second animal
+- [input, "{2}"]  # The statement
+- [input, "{3}"]  # Is the statement correct for the second animal?
+#
+# The program should generate two facts and the question
+#
+- - contains
+  - "{4}"
+  - "The program should generate a fact about {0}. The fact should be “{4}“."
+
+- - contains
+  - "{5}"
+  - "The program should generate a fact about {1}. The fact should be “{5}“."
+
+- - contains
+  - "{6}"
+  - "The program should generate a closed question: “{6}“ from statement “{2}“."
+
+- [finish, The program should finish.]

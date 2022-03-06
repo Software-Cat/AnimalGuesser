@@ -1,0 +1,41 @@
+#
+# This script emulate complete sessions from start to the finish
+#
+---
+- [start]
+- [contains, first animal, The program should asks the user for an first animal name]
+- [input, "{0}"]
+- [contains, second animal, The program should asks the user for an second animal name]
+- [input, "{1}"]
+- - contains
+  - "Specify a fact that distinguishes {2} from {3}."
+  - The program should asks the user for a fact
+- [input, "{4}"]
+- - contains
+  - "correct for {3}?"
+  - "The program should clarify if the statement is correct for {3}."
+#
+# Here the user unclear answer and the program should ask again
+#
+- [input, "{5}"]
+- - contains
+  - yes or no
+  - "The user input {5} should not be recognized as correct answer. The program should ask the user again."
+#
+# Here the user answer correctly
+#
+- [input, "{6}"]
+#
+# The program should generate two facts and the question
+#
+- - contains
+  - "{7}"
+  - The program should generate a fact about the first animals.
+- - contains
+  - "{8}"
+  - The program should generate a fact about the second animals.
+- - contains
+  - "{9}"
+  - The program should generate a closed question.
+- - finish
+  - The program should finish after the correct response.
