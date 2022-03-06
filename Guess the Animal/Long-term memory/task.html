@@ -1,10 +1,31 @@
+<!--
+  ~ Copyright © Bowen Wu 2022
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
 <h5>Description</h5>
 
-<p>Our program is growing and learning so quickly, but just as quickly it forgets everything as soon as we finish the game session. Let's save the precious information: in this stage, you need to implement saving the accumulated knowledge. Now, when the user starts the program, the computer will load the knowledge tree saved in the memory from the previous session.</p>
+<p>Our program is growing and learning so quickly, but just as quickly it forgets everything as soon as we finish the
+    game session. Let's save the precious information: in this stage, you need to implement saving the accumulated
+    knowledge. Now, when the user starts the program, the computer will load the knowledge tree saved in the memory from
+    the previous session.</p>
 
 <h5>Theory</h5>
 
-<p>We will save the knowledge base in one of the following formats: JSON, XML, YAML. For this, we will use the library <a target="_blank" href="https://en.wikipedia.org/wiki/Jackson_(API)" rel="nofollow noopener noreferrer">Jackson</a>.</p>
+<p>We will save the knowledge base in one of the following formats: JSON, XML, YAML. For this, we will use the library
+    <a href="https://en.wikipedia.org/wiki/Jackson_(API)" rel="nofollow noopener noreferrer" target="_blank">Jackson</a>.
+</p>
 
 <p>First of all, we must add the required dependencies to our <em>build.gradle</em> file:</p>
 
@@ -14,7 +35,10 @@
     compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: '2.11.2'
 }</code></pre>
 
-<p>In order to map a Java object to the file, we should create an instance of the corresponding ObjectMapper class. For JSON, it is <code class="language-java">JsonMapper()</code>, for XML — <code class="language-java">XmlMapper()</code>, and for YAML file format it is <code class="language-java">YAMLMapper()</code>.</p>
+<p>In order to map a Java object to the file, we should create an instance of the corresponding ObjectMapper class. For
+    JSON, it is <code class="language-java">JsonMapper()</code>, for XML — <code
+            class="language-java">XmlMapper()</code>, and for YAML file format it is <code class="language-java">YAMLMapper()</code>.
+</p>
 
 <p>Consider an example. Say we have a Java class to describe a tree node:</p>
 
@@ -30,7 +54,9 @@
 }
 </code></pre>
 
-<p>In our program, we define the tree root as <code class="language-java">TreeNode root</code> and build a knowledge tree during game sessions. Now we would like to save our tree to the disk in JSON format. To accomplish this task, we should define the file name and create an instance of ObjectMapper:</p>
+<p>In our program, we define the tree root as <code class="language-java">TreeNode root</code> and build a knowledge
+    tree during game sessions. Now we would like to save our tree to the disk in JSON format. To accomplish this task,
+    we should define the file name and create an instance of ObjectMapper:</p>
 
 <pre><code class="language-java">    String fileName = "animals.json";
     ObjectMapper objectMapper = new JsonMapper();
@@ -50,7 +76,8 @@
 
 <p>For both cases, you should try/catch possible exceptions.</p>
 
-<p>To avoid storing null values in the JSON file and skip parsing additional methods that can be presented in our TreeNode class, we can use Jackson Annotations:</p>
+<p>To avoid storing null values in the JSON file and skip parsing additional methods that can be presented in our
+    TreeNode class, we can use Jackson Annotations:</p>
 
 <pre><code class="language-java">@JsonInclude(JsonInclude.Include.NON_NULL)
 public class TreeNode {
@@ -108,15 +135,19 @@ public class TreeNode {
 
 <h5>Objectives</h5>
 
-<p>When starting the program, the user can specify the parameter "-type" with one of the following options: "json", "xml", or "yaml". If the parameter is not specified, the program should select the default format "json".</p>
+<p>When starting the program, the user can specify the parameter "-type" with one of the following options: "json",
+    "xml", or "yaml". If the parameter is not specified, the program should select the default format "json".</p>
 
-<p>You should polish the output before saving it to the disk. This will allow you to easily review the file in any text editor and make changes to it if necessary.</p>
+<p>You should polish the output before saving it to the disk. This will allow you to easily review the file in any text
+    editor and make changes to it if necessary.</p>
 
-<p>At the start, the program must search for the file with the database. If the file isn't found, the computer must ask the user about their favorite animal and create a new knowledge tree.</p>
+<p>At the start, the program must search for the file with the database. If the file isn't found, the computer must ask
+    the user about their favorite animal and create a new knowledge tree.</p>
 
 <h5>Examples</h5>
 
-<p>The greater-than symbol followed by a space <code class="language-java">&gt; </code> represents the user input. Note that it's not part of the input.</p>
+<p>The greater-than symbol followed by a space <code class="language-java">&gt; </code> represents the user input. Note
+    that it's not part of the input.</p>
 
 <p><strong>Example 1</strong></p>
 
@@ -150,7 +181,8 @@ Have a nice day!</code></pre>
 
 <p><strong>Example 2</strong></p>
 
-<p>If a knowledge base already exists, the program doesn't ask the user about the favorite animal: it offers to play a game instead.</p>
+<p>If a knowledge base already exists, the program doesn't ask the user about the favorite animal: it offers to play a
+    game instead.</p>
 
 <pre><code class="language-no-highlight">Hi Night Owl!
 

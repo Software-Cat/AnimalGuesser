@@ -1,3 +1,19 @@
+/*
+ * Copyright © Bowen Wu 2022
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package animals.linguistics;
 
 import org.apache.commons.lang3.RegExUtils;
@@ -29,7 +45,8 @@ public class PhraseUtils {
      * @param noun the noun to generate an article for
      * @return the generated article
      */
-    public static @NotNull Article generateAppropriateIndefiniteArticle(@NotNull String noun) {
+    public static @NotNull
+    Article generateAppropriateIndefiniteArticle(@NotNull String noun) {
         Matcher matcher = STARTS_WITH_VOWEL.matcher(noun);
 
         if (matcher.matches()) {
@@ -43,7 +60,8 @@ public class PhraseUtils {
         return HAS_ARTICLE.matcher(phrase).matches();
     }
 
-    public static @Nullable Article getArticle(@NotNull String phrase) {
+    public static @Nullable
+    Article getArticle(@NotNull String phrase) {
         if (hasArticle(phrase)) {
             Matcher matcher = ONLY_ARTICLE.matcher(phrase);
 
@@ -58,13 +76,15 @@ public class PhraseUtils {
         return null;
     }
 
-    public static @NotNull String stripInBetweenSpaces(@NotNull String phrase) {
+    public static @NotNull
+    String stripInBetweenSpaces(@NotNull String phrase) {
         return Arrays.stream(phrase.split("\\s"))
                 .filter((String s) -> !s.isBlank())
                 .collect(Collectors.joining(" "));
     }
 
-    public static @NotNull String getNoun(@NotNull String phrase) {
+    public static @NotNull
+    String getNoun(@NotNull String phrase) {
         if (hasArticle(phrase)) {
             // Remove the first occurrence of the article, if there's a second occurrence
             // it would be a part of the noun itself and should not be removed.

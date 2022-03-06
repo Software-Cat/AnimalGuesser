@@ -1,12 +1,32 @@
+<!--
+  ~ Copyright © Bowen Wu 2022
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
 <h5>Description</h5>
 
-<p>Our program is turning from a simple game into an expert system. In this stage, we will add a menu that will allow you not only to play with the computer but also get different information from the knowledge base.</p>
+<p>Our program is turning from a simple game into an expert system. In this stage, we will add a menu that will allow
+    you not only to play with the computer but also get different information from the knowledge base.</p>
 
 <h5>Objectives</h5>
 
-<p>As before, the program first greets the user. If a database has not been created yet, the program should ask the user about their favorite animal. This animal will become the basis of the newly created knowledge base. The program should then offer the user to play.</p>
+<p>As before, the program first greets the user. If a database has not been created yet, the program should ask the user
+    about their favorite animal. This animal will become the basis of the newly created knowledge base. The program
+    should then offer the user to play.</p>
 
-<p>If a knowledge tree already exists, the computer loads it, greets the user as an expert system in animals, and offers the user a menu. The menu has to include at least these five items:</p>
+<p>If a knowledge tree already exists, the computer loads it, greets the user as an expert system in animals, and offers
+    the user a menu. The menu has to include at least these five items:</p>
 
 <ol>
     <li>Play the guessing game</li>
@@ -18,7 +38,8 @@
 
 <h5>Examples</h5>
 
-<p>The greater-than symbol followed by a space <code class="java">&gt; </code> represents the user input. Note that it's not part of the input.</p>
+<p>The greater-than symbol followed by a space <code class="java">&gt; </code> represents the user input. Note that it's
+    not part of the input.</p>
 
 <p><strong>Example 1: the game starts anew</strong></p>
 
@@ -82,7 +103,8 @@ What do you want to do:
 
 <p><strong>Example 3: the user wants to search for an animal</strong></p>
 
-<p>The search has to accept the animal's name with or without the article. If the animal is found, the program should print all the facts it knows about this animal.</p>
+<p>The search has to accept the animal's name with or without the article. If the animal is found, the program should
+    print all the facts it knows about this animal.</p>
 
 <pre><code class="language-no-highlight">Your choice:
 3
@@ -106,7 +128,8 @@ No facts about the rabbit.
 
 <p><strong>Example 4: the user wants to see the list of all animals</strong></p>
 
-<p>The program should traverse the knowledge tree and collect all the animal names into a list. The list of animals should be sorted in ascending order without articles.</p>
+<p>The program should traverse the knowledge tree and collect all the animal names into a list. The list of animals
+    should be sorted in ascending order without articles.</p>
 
 <pre><code class="language-no-highlight">Your choice:
 2
@@ -121,7 +144,9 @@ Here are the animals I know:
 
 <p><strong>Example 5: the user wants to see the stats</strong></p>
 
-<p>The program should print the root node, the size of the knowledge tree (number of nodes), the number of animals, the number of facts, and the maximum and minimum depth of the tree which correspond to the minimum and maximum number of questions the program gets before it wins or gives up.</p>
+<p>The program should print the root node, the size of the knowledge tree (number of nodes), the number of animals, the
+    number of facts, and the maximum and minimum depth of the tree which correspond to the minimum and maximum number of
+    questions the program gets before it wins or gives up.</p>
 
 <pre><code class="language-no-highlight">&gt; 4
 The Knowledge Tree stats
