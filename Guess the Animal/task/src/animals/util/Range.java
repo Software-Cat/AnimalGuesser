@@ -1,7 +1,6 @@
 package animals.util;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class Range<T extends Number> {
 

@@ -1,5 +1,6 @@
 package animals.input;
 
+import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.InputMismatchException;

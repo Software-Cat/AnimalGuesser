@@ -23,7 +23,7 @@ public class PersistentAsker<T> extends ConcreteAsker<T> {
     @Override
     public @NotNull T ask() throws InputMismatchException {
         System.out.println(getQuery());
-        
+
         T response = null;
         boolean responseIsValid = false;
 

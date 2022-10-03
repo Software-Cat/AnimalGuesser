@@ -1,347 +1,347 @@
 type: edu
 custom_name: Ĉu ĝi estas la kato?
 files:
-- name: src/animals/Main.java
-  visible: true
-  text: |
-    package animals;
-
-    import animals.base.Application;
-
-    public class Main {
-
-        public static void main(String[] args) throws InterruptedException {
-            new Application().run();
-        }
-    }
-  learner_created: false
-- name: src/animals/greet/TimedGreeter.java
-  visible: true
-  text: |
-    package animals.greet;
-
-    import animals.util.Range;
-
-    import java.time.LocalTime;
-    import java.util.List;
-    import java.util.Random;
-
-    public class TimedGreeter implements Greeter {
-
-        private final Range<Integer> MORNING = new Range<>(5, 12);
-        private final Range<Integer> AFTERNOON = new Range<>(12, 18);
-
-        private final Random random = new Random();
-
-        @Override
-        public void hello() {
-            int currentHour = LocalTime.now().getHour();
-
-            if (MORNING.isInRange(currentHour)) {
-                System.out.println("Good morning!");
-            } else if (AFTERNOON.isInRange(currentHour)) {
-                System.out.println("Good afternoon!");
-            } else {
-                System.out.println("Good evening!");
-            }
-        }
-
-        @Override
-        public void goodbye() {
-            System.out.println(List.of("Have a nice day!", "See you soon!", "Bye!").get(random.nextInt(3)));
-        }
-    }
-  learner_created: false
-- name: src/animals/util/Range.java
-  visible: true
-  text: |
-    package animals.util;
-
-    import org.jetbrains.annotations.NotNull;
-    import org.jetbrains.annotations.Nullable;
-
-    public class Range<T extends Number> {
-
-        @NotNull
-        private final T boundOne;
-
-        @NotNull
-        private final T boundTwo;
-
-        private final boolean lowerInclusive;
-
-        private final boolean upperInclusive;
-
-        public Range(@NotNull T boundOne, @NotNull T boundTwo, boolean lowerInclusive, boolean upperInclusive) {
-            this.boundOne = boundOne;
-            this.boundTwo = boundTwo;
-            this.lowerInclusive = lowerInclusive;
-            this.upperInclusive = upperInclusive;
-        }
-
-        public Range(@NotNull T boundOne, @NotNull T boundTwo) {
-            this(boundOne, boundTwo, true, false);
-        }
-
-        public T getLowerBound() {
-            if (boundOneDouble() < boundTwoDouble()) {
-                return boundOne;
-            } else {
-                return boundTwo;
-            }
-        }
-
-        public T getUpperBound() {
-            if (boundOneDouble() > boundTwoDouble()) {
-                return boundOne;
-            } else {
-                return boundTwo;
-            }
-        }
-
-        public <U extends Number> boolean isInRange(@Nullable final U number) {
-            if (number == null) {
-                return false;
-            }
-
-            double doubleValue = number.doubleValue();
-
-            boolean satisfyLower = false;
-            boolean satisfyUpper = false;
-
-            if (lowerInclusive) {
-                satisfyLower = doubleValue >= getLowerBound().doubleValue();
-            } else {
-                satisfyLower = doubleValue > getLowerBound().doubleValue();
-            }
-
-            if (upperInclusive) {
-                satisfyUpper = doubleValue <= getUpperBound().doubleValue();
-            } else {
-                satisfyUpper = doubleValue < getUpperBound().doubleValue();
-            }
-
-            return satisfyLower && satisfyUpper;
-        }
-
-        private double boundOneDouble() {
-            return boundOne.doubleValue();
-        }
-
-        private double boundTwoDouble() {
-            return boundTwo.doubleValue();
-        }
-    }
-  learner_created: false
-- name: src/animals/base/Animal.java
-  visible: true
-  text: |
-    package animals.base;
-
-    import animals.linguistics.NounPhrase;
-    import org.jetbrains.annotations.NotNull;
-
-
-    public class Animal {
-
-        @NotNull
-        private final NounPhrase species;
-
-        public Animal(@NotNull String species) {
-            this.species = NounPhrase.parsePhrase(species);
-        }
-
-        @Override
-        public String toString() {
-            return species.toString();
-        }
-    }
-  learner_created: false
-- name: src/animals/base/Application.java
-  visible: true
-  text: |
-    package animals.base;
-
-    import animals.greet.Greeter;
-    import animals.greet.TimedGreeter;
-    import animals.input.Asker;
-    import animals.input.AskerBuilder;
-
-    import java.util.InputMismatchException;
-    import java.util.List;
-    import java.util.Random;
-
-    public class Application implements Runnable {
-
-        private final Greeter greeter = new TimedGreeter();
-
-        private final Asker<Animal> animalAsker = AskerBuilder.asker()
-                .withQuery("Enter an animal:")
-                .addTransformer(String::trim)
-                .addPredicate((String s) -> !s.isBlank())
-                .addTransformer(Animal::new)
-                .build();
-
-        private final Asker<Boolean> yesNoAsker = AskerBuilder.asker()
-                .withQuery("Is it a ...?")
-                .addTransformer(String::trim)
-                .addPredicate((String s) -> !s.isBlank())
-                .addTransformer((String s) -> {
-                    s = s.toLowerCase();
-                    s = s.replaceFirst("\\p{Punct}", "");
-                    switch (s) {
-                        case "y", "yes", "yeah", "yep", "sure", "right", "affirmative",
-                                "correct", "indeed", "you bet", "exactly", "you said it":
-                            return true;
-                        case "n", "no", "no way", "nah", "nope", "negative",
-                                "i don't think so", "yeah no":
-                            return false;
-                    }
-                    throw new InputMismatchException(
-                            "The input (\"%s\") cannot be converted to a valid boolean response.".formatted(s));
-                })
-                .persistent(true)
-                .withRetryPhrases(List.of(
-                        "I'm not sure if I caught you: was it yes or no?",
-                        "Funny, I still don't understand, is it yes or no?",
-                        "Oh, it is too complicated for me: just tell me yes or no.",
-                        "Could you please simply say yes or no?",
-                        "Oh, no, don't try to confuse me: say yes or no."))
-                .build();
-
-        @Override
-        public void run() {
-            greeter.hello();
-            System.out.println();
-
-            Animal animal = animalAsker.ask();
-
-            yesNoAsker.setQuery("Is it %s?".formatted(animal));
-            if (yesNoAsker.ask()) {
-                System.out.println("You answered: Yes");
-            } else {
-                System.out.println("You answered: No");
-            }
-
-            System.out.println();
-            greeter.goodbye();
-        }
-    }
-  learner_created: false
-- name: src/animals/input/AskerBuilder.java
-  visible: true
-  text: |
-    package animals.input;
-
-    import org.jetbrains.annotations.NotNull;
-
-    import java.util.InputMismatchException;
-    import java.util.List;
-    import java.util.function.Function;
-    import java.util.function.Predicate;
-
-    public final class AskerBuilder<T> {
-
-        @NotNull
-        private String inputPrompt = "> ";
-
-        @NotNull
-        private String query = "";
-
-        private Function<@NotNull String, @NotNull T> transformer;
-
-        private boolean persistent = false;
-
-        private List<String> retryPhrases = List.of("Please enter a valid response.");
-
-        private AskerBuilder() {
-        }
-
-        public static AskerBuilder<String> asker() {
-            AskerBuilder<String> builder = new AskerBuilder<>();
-            return builder.withTransformer(Function.identity());
-        }
-
-        public AskerBuilder<T> withInputPrompt(String inputPrompt) {
-            this.inputPrompt = inputPrompt;
-            return this;
-        }
-
-        public AskerBuilder<T> withQuery(String query) {
-            this.query = query;
-            return this;
-        }
-
-        /**
-         * Composes the new transformer after already-existing transformers.
-         *
-         * @param transformer the new transformer
-         * @param <R>         the type returned by the new transformer
-         * @return builder
-         */
-        public <R> AskerBuilder<R> addTransformer(Function<T, R> transformer) {
-            Function<String, R> newTransformer = this.transformer.andThen(transformer);
-            return new AskerBuilder<R>().withQuery(query).withInputPrompt(inputPrompt).withTransformer(newTransformer);
-        }
-
-        /**
-         * Composes the new predicate after already-existing transformers. An exception is thrown if the predicate fails.
-         *
-         * @param predicate the new predicate
-         * @return builder
-         */
-        public AskerBuilder<T> addPredicate(Predicate<T> predicate) {
-            return addTransformer((T t) -> {
-                if (!predicate.test(t)) {
-                    throw new InputMismatchException("The input (\"%s\") does not satisfy the predicate (%s).".formatted(t, predicate));
-                }
-                return t;
-            });
-        }
-
-        public AskerBuilder<T> persistent(boolean persistent) {
-            this.persistent = persistent;
-            return this;
-        }
-
-        public AskerBuilder<T> withRetryPhrases(List<String> retryPhrases) {
-            this.retryPhrases = retryPhrases;
-            return this;
-        }
-
-        /**
-         * Completely overwrites the previous transformer with the new one.
-         *
-         * @param transformer the new transformer
-         * @return builder
-         */
-        private AskerBuilder<T> withTransformer(Function<String, T> transformer) {
-            this.transformer = transformer;
-            return this;
-        }
-
-        public Asker<T> build() {
-            Asker<T> asker;
-
-            if (persistent) {
-                PersistentAsker<T> persistentAsker = new PersistentAsker<>();
-                persistentAsker.setRetryPhrases(retryPhrases);
-                asker = persistentAsker;
-            } else {
-                asker = new ConcreteAsker<>();
-            }
-
-            asker.setQuery(query);
-            asker.setInputPrompt(inputPrompt);
-            asker.setTransformer(transformer);
-
-            return asker;
-        }
-    }
-  learner_created: false
-- name: src/animals/input/PersistentAsker.java
-  visible: true
-  text: "package animals.input;\n\nimport lombok.Getter;\nimport lombok.Setter;\n\
+  - name: src/animals/Main.java
+    visible: true
+    text: |
+      package animals;
+      
+      import animals.base.Application;
+      
+      public class Main {
+      
+          public static void main(String[] args) throws InterruptedException {
+              new Application().run();
+          }
+      }
+    learner_created: false
+  - name: src/animals/greet/TimedGreeter.java
+    visible: true
+    text: |
+      package animals.greet;
+      
+      import animals.util.Range;
+      
+      import java.time.LocalTime;
+      import java.util.List;
+      import java.util.Random;
+      
+      public class TimedGreeter implements Greeter {
+      
+          private final Range<Integer> MORNING = new Range<>(5, 12);
+          private final Range<Integer> AFTERNOON = new Range<>(12, 18);
+      
+          private final Random random = new Random();
+      
+          @Override
+          public void hello() {
+              int currentHour = LocalTime.now().getHour();
+      
+              if (MORNING.isInRange(currentHour)) {
+                  System.out.println("Good morning!");
+              } else if (AFTERNOON.isInRange(currentHour)) {
+                  System.out.println("Good afternoon!");
+              } else {
+                  System.out.println("Good evening!");
+              }
+          }
+      
+          @Override
+          public void goodbye() {
+              System.out.println(List.of("Have a nice day!", "See you soon!", "Bye!").get(random.nextInt(3)));
+          }
+      }
+    learner_created: false
+  - name: src/animals/util/Range.java
+    visible: true
+    text: |
+      package animals.util;
+      
+      import org.jetbrains.annotations.NotNull;
+      import org.jetbrains.annotations.Nullable;
+      
+      public class Range<T extends Number> {
+      
+          @NotNull
+          private final T boundOne;
+      
+          @NotNull
+          private final T boundTwo;
+      
+          private final boolean lowerInclusive;
+      
+          private final boolean upperInclusive;
+      
+          public Range(@NotNull T boundOne, @NotNull T boundTwo, boolean lowerInclusive, boolean upperInclusive) {
+              this.boundOne = boundOne;
+              this.boundTwo = boundTwo;
+              this.lowerInclusive = lowerInclusive;
+              this.upperInclusive = upperInclusive;
+          }
+      
+          public Range(@NotNull T boundOne, @NotNull T boundTwo) {
+              this(boundOne, boundTwo, true, false);
+          }
+      
+          public T getLowerBound() {
+              if (boundOneDouble() < boundTwoDouble()) {
+                  return boundOne;
+              } else {
+                  return boundTwo;
+              }
+          }
+      
+          public T getUpperBound() {
+              if (boundOneDouble() > boundTwoDouble()) {
+                  return boundOne;
+              } else {
+                  return boundTwo;
+              }
+          }
+      
+          public <U extends Number> boolean isInRange(@Nullable final U number) {
+              if (number == null) {
+                  return false;
+              }
+      
+              double doubleValue = number.doubleValue();
+      
+              boolean satisfyLower = false;
+              boolean satisfyUpper = false;
+      
+              if (lowerInclusive) {
+                  satisfyLower = doubleValue >= getLowerBound().doubleValue();
+              } else {
+                  satisfyLower = doubleValue > getLowerBound().doubleValue();
+              }
+      
+              if (upperInclusive) {
+                  satisfyUpper = doubleValue <= getUpperBound().doubleValue();
+              } else {
+                  satisfyUpper = doubleValue < getUpperBound().doubleValue();
+              }
+      
+              return satisfyLower && satisfyUpper;
+          }
+      
+          private double boundOneDouble() {
+              return boundOne.doubleValue();
+          }
+      
+          private double boundTwoDouble() {
+              return boundTwo.doubleValue();
+          }
+      }
+    learner_created: false
+  - name: src/animals/base/Animal.java
+    visible: true
+    text: |
+      package animals.base;
+      
+      import animals.linguistics.NounPhrase;
+      import org.jetbrains.annotations.NotNull;
+      
+      
+      public class Animal {
+      
+          @NotNull
+          private final NounPhrase species;
+      
+          public Animal(@NotNull String species) {
+              this.species = NounPhrase.parsePhrase(species);
+          }
+      
+          @Override
+          public String toString() {
+              return species.toString();
+          }
+      }
+    learner_created: false
+  - name: src/animals/base/Application.java
+    visible: true
+    text: |
+      package animals.base;
+      
+      import animals.greet.Greeter;
+      import animals.greet.TimedGreeter;
+      import animals.input.Asker;
+      import animals.input.AskerBuilder;
+      
+      import java.util.InputMismatchException;
+      import java.util.List;
+      import java.util.Random;
+      
+      public class Application implements Runnable {
+      
+          private final Greeter greeter = new TimedGreeter();
+      
+          private final Asker<Animal> animalAsker = AskerBuilder.asker()
+                  .withQuery("Enter an animal:")
+                  .addTransformer(String::trim)
+                  .addPredicate((String s) -> !s.isBlank())
+                  .addTransformer(Animal::new)
+                  .build();
+      
+          private final Asker<Boolean> yesNoAsker = AskerBuilder.asker()
+                  .withQuery("Is it a ...?")
+                  .addTransformer(String::trim)
+                  .addPredicate((String s) -> !s.isBlank())
+                  .addTransformer((String s) -> {
+                      s = s.toLowerCase();
+                      s = s.replaceFirst("\\p{Punct}", "");
+                      switch (s) {
+                          case "y", "yes", "yeah", "yep", "sure", "right", "affirmative",
+                                  "correct", "indeed", "you bet", "exactly", "you said it":
+                              return true;
+                          case "n", "no", "no way", "nah", "nope", "negative",
+                                  "i don't think so", "yeah no":
+                              return false;
+                      }
+                      throw new InputMismatchException(
+                              "The input (\"%s\") cannot be converted to a valid boolean response.".formatted(s));
+                  })
+                  .persistent(true)
+                  .withRetryPhrases(List.of(
+                          "I'm not sure if I caught you: was it yes or no?",
+                          "Funny, I still don't understand, is it yes or no?",
+                          "Oh, it is too complicated for me: just tell me yes or no.",
+                          "Could you please simply say yes or no?",
+                          "Oh, no, don't try to confuse me: say yes or no."))
+                  .build();
+      
+          @Override
+          public void run() {
+              greeter.hello();
+              System.out.println();
+      
+              Animal animal = animalAsker.ask();
+      
+              yesNoAsker.setQuery("Is it %s?".formatted(animal));
+              if (yesNoAsker.ask()) {
+                  System.out.println("You answered: Yes");
+              } else {
+                  System.out.println("You answered: No");
+              }
+      
+              System.out.println();
+              greeter.goodbye();
+          }
+      }
+    learner_created: false
+  - name: src/animals/input/AskerBuilder.java
+    visible: true
+    text: |
+      package animals.input;
+      
+      import org.jetbrains.annotations.NotNull;
+      
+      import java.util.InputMismatchException;
+      import java.util.List;
+      import java.util.function.Function;
+      import java.util.function.Predicate;
+      
+      public final class AskerBuilder<T> {
+      
+          @NotNull
+          private String inputPrompt = "> ";
+      
+          @NotNull
+          private String query = "";
+      
+          private Function<@NotNull String, @NotNull T> transformer;
+      
+          private boolean persistent = false;
+      
+          private List<String> retryPhrases = List.of("Please enter a valid response.");
+      
+          private AskerBuilder() {
+          }
+      
+          public static AskerBuilder<String> asker() {
+              AskerBuilder<String> builder = new AskerBuilder<>();
+              return builder.withTransformer(Function.identity());
+          }
+      
+          public AskerBuilder<T> withInputPrompt(String inputPrompt) {
+              this.inputPrompt = inputPrompt;
+              return this;
+          }
+      
+          public AskerBuilder<T> withQuery(String query) {
+              this.query = query;
+              return this;
+          }
+      
+          /**
+           * Composes the new transformer after already-existing transformers.
+           *
+           * @param transformer the new transformer
+           * @param <R>         the type returned by the new transformer
+           * @return builder
+           */
+          public <R> AskerBuilder<R> addTransformer(Function<T, R> transformer) {
+              Function<String, R> newTransformer = this.transformer.andThen(transformer);
+              return new AskerBuilder<R>().withQuery(query).withInputPrompt(inputPrompt).withTransformer(newTransformer);
+          }
+      
+          /**
+           * Composes the new predicate after already-existing transformers. An exception is thrown if the predicate fails.
+           *
+           * @param predicate the new predicate
+           * @return builder
+           */
+          public AskerBuilder<T> addPredicate(Predicate<T> predicate) {
+              return addTransformer((T t) -> {
+                  if (!predicate.test(t)) {
+                      throw new InputMismatchException("The input (\"%s\") does not satisfy the predicate (%s).".formatted(t, predicate));
+                  }
+                  return t;
+              });
+          }
+      
+          public AskerBuilder<T> persistent(boolean persistent) {
+              this.persistent = persistent;
+              return this;
+          }
+      
+          public AskerBuilder<T> withRetryPhrases(List<String> retryPhrases) {
+              this.retryPhrases = retryPhrases;
+              return this;
+          }
+      
+          /**
+           * Completely overwrites the previous transformer with the new one.
+           *
+           * @param transformer the new transformer
+           * @return builder
+           */
+          private AskerBuilder<T> withTransformer(Function<String, T> transformer) {
+              this.transformer = transformer;
+              return this;
+          }
+      
+          public Asker<T> build() {
+              Asker<T> asker;
+      
+              if (persistent) {
+                  PersistentAsker<T> persistentAsker = new PersistentAsker<>();
+                  persistentAsker.setRetryPhrases(retryPhrases);
+                  asker = persistentAsker;
+              } else {
+                  asker = new ConcreteAsker<>();
+              }
+      
+              asker.setQuery(query);
+              asker.setInputPrompt(inputPrompt);
+              asker.setTransformer(transformer);
+      
+              return asker;
+          }
+      }
+    learner_created: false
+  - name: src/animals/input/PersistentAsker.java
+    visible: true
+    text: "package animals.input;\n\nimport lombok.Getter;\nimport lombok.Setter;\n\
     import org.jetbrains.annotations.NotNull;\n\nimport java.util.InputMismatchException;\n\
     import java.util.List;\nimport java.util.Random;\n\npublic class PersistentAsker<T>\
     \ extends ConcreteAsker<T> {\n\n    private final Random random = new Random();\n\
@@ -355,585 +355,585 @@ files:
     \                responseIsValid = true;\n            } catch (InputMismatchException\
     \ e) {\n                System.out.println(retryPhrases.get(random.nextInt(retryPhrases.size())));\n\
     \            }\n        }\n\n        return response;\n    }\n}\n"
-  learner_created: false
-- name: src/animals/input/ConcreteAsker.java
-  visible: true
-  text: |
-    package animals.input;
-
-    import lombok.Getter;
-    import lombok.Setter;
-    import org.jetbrains.annotations.NotNull;
-
-    import java.util.InputMismatchException;
-    import java.util.Scanner;
-    import java.util.function.Function;
-
-    public class ConcreteAsker<T> implements Asker<T> {
-
-        protected final Scanner scanner = new Scanner(System.in);
-
-        @NotNull
-        @Getter
-        @Setter
-        private String inputPrompt;
-
-        @Getter
-        @Setter
-        @NotNull
-        private String query;
-
-        @Getter
-        @Setter
-        @NotNull
-        private Function<@NotNull String, @NotNull T> transformer;
-
-        protected ConcreteAsker() {
-        }
-
-        public @NotNull T ask() throws InputMismatchException {
-            System.out.println(query);
-            System.out.print(inputPrompt);
-            return transformer.apply(scanner.nextLine());
-        }
-    }
-  learner_created: false
-- name: src/animals/input/Asker.java
-  visible: true
-  text: |
-    package animals.input;
-
-    import org.jetbrains.annotations.NotNull;
-
-    import java.util.InputMismatchException;
-    import java.util.function.Function;
-    import java.util.function.Supplier;
-
-    public interface Asker<T> extends Supplier<T> {
-
-        @Override
-        default @NotNull T get() {
-            return ask();
-        }
-
-        @NotNull T ask() throws InputMismatchException;
-
-        void setQuery(@NotNull String query);
-
-        void setInputPrompt(@NotNull String inputPrompt);
-
-        void setTransformer(@NotNull Function<@NotNull String, @NotNull T> transformer);
-    }
-  learner_created: false
-- name: test/en.data.yaml
-  visible: false
-  text: |-
-    ---
-    - - yaml
-    - - json
-    - - xml
-  learner_created: false
-- name: test/en.script.yaml
-  visible: false
-  text: |+
-    #
-    # There is a scenario of parameterized test for English language.
-    #
-    ---
-    - [start, "-type {0}"] # We will test three different file formats: JSON, YAML, XML
-    - - contains
-      - which animal
-      - When no Knwoledge Tree is created yet the program should ask for a favourite animals at first.
-    - [input, cat]
-    - - contains
-      - welcome to the animal
-      - After entering the favourite animal the program should welcom the user and represent itself as an expert system
-
-    #
-    # Start the menu
-    #
-    - - matches
-      - "(?si).*play.*list.*search.*stat.*print.*exit.*"
-      - The program should display the menu
-
-    #
-    # Let's play the game!
-    #
-    - [input, 1]
-    - - contains
-      - you think of an animal, and i guess it.
-      - The program should asks the user to think of an animal
-    - - contains
-      - press enter
-      - The computer should make a pause before the game.
-    - [input, ""]
-
-    #
-    # After user press Enter the game started!
-    #
-    - - contains
-      - is it a cat?
-      - The very first question in the very first game should undoubtedly be about a beloved animal.
-    - [input, No] # We think of about other animal, not about the cat
-    - - contains
-      - i give up
-      - If the program cannot guess the animal, it must give up.
-    - [input, dog] # Of course, our second animal is a dog!
-    - - contains
-      - distinguishes
-      - The program should find out how one animal differs from another.
-    - - input
-      - it can climb trees
-    - - find
-      - is .+ correct for a dog?
-      - The program should clarify if the statement is correct for a dog.
-    - [input, no]
-
-    - - contains
-      - "cat can climb trees"
-      - The program must generate the correct fact for the first animal.
-
-    - - contains
-      - "the dog "
-      - The program must generate the correct fact for the second animal.
-
-    - - matches
-      - "(?is).*(again|repeat|one more).*"
-      - The program should ask the user to play again
-    - [input, yes] # Yes, we will play once again
-    - [input, ""] # Press ENTER
-    - - contains
-      - can it climb trees?
-      - After the first game, the starting question should be the question of fact.
-    - [input, yes]
-    - [contains, "is it a cat?", "The program must assume that the animal is a cat."]
-    - - input
-      - |
-        no
-        lynx
-        it is living in the forest
-        yes
-        no
-    # We finish the game.
-
-    - - matches
-      - "(?si).*play.*list.*search.*stat.*print.*exit.*"
-      - The program should display the menu
-
-    - [input, "0"] # Exit from the application
-    - - matches
-      - "(?si).*(bye|later|soon|off|see|!).*"
-      - How about to say goodbye to the user?
-    - [finish, "The program should finish when user exit"]
-    - - file exists
-      - "animals.{0}"
-      - "The program should save knowledge tree to animals.{0} file."
-    #
-    # After the first session the program created and save the Knowledge Tree
-    # We will run the program again to make sure that all data was saved and restored correctly.
-    #
-    - [start, "-type {0}"]
-    - - not contains
-      - which animal do you like most?
-      - If the tree of knowledge exists, then the program should not ask the user about his favorite animal.
-    - - find
-      - welcome to the animal(.s)? expert system
-      - The program should immediately greet the user after starting.
-    #
-    # Start the menu
-    #
-    - - matches
-      - "(?si).*play.*list.*search.*stat.*print.*exit.*"
-      - The program should display the menu
-
-    #
-    # Let's check which animals are now in our knowledge tree.
-    #
-    - [input, "2"]
-    - - matches
-      - (?si).*cat.*dog.*lynx.*
-      - The program should print a list of all animals in alphabetical order.
-
-    #
-    # Check the facts about the animal
-    #
-    - [input, "3"]
-    - - find
-      - enter.* animal
-      - The program should ask the user to enter the name of the animal
-    - [input, lynx]
-    - - contains
-      - facts about the lynx
-      - The program must find the animal that is in the knowledge tree.
-    - - contains
-      - it can climb trees
-      - The program did not print the first fact about the animal
-    - - contains
-      - it is living in the forest
-      - The program did not print the second fact about the animal
-
-    #
-    # Check the knowledge tree statistics
-    #
-    - [input, "4"]
-    - [contains, "knowledge tree", "The header for the table must be printed"]
-
-    - - find
-      - (?i)root node.*It can climb trees
-      - The root element in our tree must be a statement
-
-    - - find
-      - number of nodes.*\b5\b
-      - The total number of nodes in the tree is not counted correctly.
-
-    - - find
-      - number of animals\D*3\b
-      - The total number of animals in the tree is not counted correctly.
-
-    - - find
-      - number of statements\D*2\b
-      - The total number of animals in the tree is not counted correctly.
-
-    - - find
-      - height of the tree\D*2\b
-      - The tree depth was calculated incorrectly.
-
-    - - find
-      - minimum\D*1\b
-      - The minimum tree depth was calculated incorrectly.
-
-    - - find
-      - average\D*1[,.]7
-      - The average tree depth was calculated incorrectly.
-
-    - [input, "0"] # Exit from the application
-    - [finish, "The program should finish when user exit"]
-    - - file delete
-      - "animals.{0}"
-      - "The test can't delete animals.{0} file."
-
-
-  learner_created: false
-- name: test/eo.data.yaml
-  visible: false
-  text: |-
-    ---
-    - - yaml
-    - - json
-    - - xml
-  learner_created: false
-- name: test/eo.script.yaml
-  visible: false
-  text: |+
-    #
-    # There is a scenario of parameterized test for Esperanto language.
-    #
-    ---
-    - [start, "-type {0}"] # We will test three different file formats: JSON, YAML, XML
-    - - contains
-      - "kiun beston vi plej ŝatas?"
-      - "[Esperanto] When no Knowledge Tree is created yet the program should ask for a favourite animals at first."
-    - [input, kato]
-    - - contains
-      - bonvenon al la sperta sistemo de la besto!
-      - "[Esperanto] After entering the favourite animal the program should welcome the user and represent itself as an expert system"
-
-    #
-    # Start the menu
-    #
-    - - matches
-      - (?si).*Ludi.*Listo.*Serĉi.*Kalkuli.*Eliri.*
-      - "[Esperanto] The program should display the menu"
-
-    #
-    # Let's play the game!
-    #
-    - [input, 1]
-    - - contains
-      - vi pensu pri besto, kaj mi divenos ĝin.
-      - "[Esperanto] The program should asks the user to think of an animal"
-    - - contains
-      - premu enen kiam vi pretas.
-      - "[Esperanto] The computer should make a pause before the game."
-    - [input, ""]
-
-    #
-    # After user press Enter the game started!
-    #
-    - - contains
-      - ĉu ĝi estas kato?
-      - "[Esperanto] The very first question in the very first game should undoubtedly be about a beloved animal."
-    - [input, ne] # We think of about other animal, not about the cat
-    - - contains
-      - mi rezignas. kiun beston vi havas en la kapo?
-      - "[Esperanto] If the program cannot guess the animal, it must give up."
-    - [input, hundo] # Of course, our second animal is a dog!
-    - - contains
-      - indiku fakton, kiu distingas kato de hundo
-      - "[Esperanto] The program should find out how one animal differs from another."
-    - - input
-      - ĝi povas surgrimpi arbon
-    - - contains
-      - ĉu la aserto ĝustas por la hundo?
-      - "[Esperanto] The program should clarify if the statement is correct for a dog."
-    - [input, ne]
-
-    - - contains
-      - la kato povas surgrimpi arbon
-      - The program must generate the correct fact for the first animal.
-
-    - - contains
-      - la hundo ne povas surgrimpi arbon
-      - "[Esperanto] The program must generate the correct fact for the second animal."
-
-    - - matches
-      - "(?is).*(denove|ripeti|ankoraŭ).*"
-      - "[Esperanto] The program should ask the user to play again"
-    - [input, jes] # Yes, we will play once again
-    - [input, ""] # Press ENTER
-    - - contains
-      - povas surgrimpi arbon?
-      - "[Esperanto] After the first game, the starting question should be the question of fact."
-    - [input, jes]
-    - [contains, "ĉu ĝi estas kato?", "[Esperanto] The program must assume that the animal is a cat."]
-    - - input
-      - |
-        ne
-        linko
-        ĝi loĝas en la arbaro
-        jes
-        ne
-    # We finish the game.
-    - - matches
-      - (?si).*Ludi.*Listo.*Serĉi.*Kalkuli.*Eliri.*
-      - "[Esperanto] The program should display the menu"
-    - [input, "0"] # Exit from the application
-    - - matches
-      - "(?si).*(ĝis|estis).*"
-      - "[Esperanto] How about to say goodbye to the user?"
-    - [finish, "The program should finish when user exit"]
-    - - file exists
-      - "animals_eo.{0}"
-      - "The program should save knowledge tree to animals_eo.{0} file."
-    #
-    # After the first session the program created and save the Knowledge Tree
-    # We will run the program again to make sure that all data was saved and restored correctly.
-    #
-    - [start, "-type {0}"]
-    - - not contains
-      - kiun beston vi plej ŝatas?
-      - "[Esperanto] If the tree of knowledge exists, then the program should not ask the user about his favorite animal."
-    - - contains
-      - bonvenon al la sperta sistemo de la besto!
-      - "[Esperanto] The program should immediately greet the user after starting."
-    - - matches
-      - (?si).*Ludi.*Listo.*Serĉi.*Kalkuli.*Eliri.*
-      - "[Esperanto] The program should display the menu"
-
-    #
-    # Let's check which animals are now in our knowledge tree.
-    #
-    - [input, "2"]
-    - - matches
-      - (?si).*hundo.*kato.*linko.*
-      - "[Esperanto] The program should print a list of all animals in alphabetical order."
-
-    #
-    # Check the facts about the animal
-    #
-    - [input, "3"]
-    - - find
-      - enigu .* besto
-      - "[Esperanto] The program should ask the user to enter the name of the animal"
-    - [input, linko]
-    - - contains
-      - faktoj pri la linko
-      - "[Esperanto] The program must find the animal that is in the knowledge tree."
-    - - contains
-      - ĝi povas surgrimpi arbon
-      - "[Esperanto] The program did not print the first fact about the animal"
-    - - contains
-      - ĝi loĝas en la arbaro
-      - "[Esperanto] The program did not print the second fact about the animal"
-
-    #
-    # Check the knowledge tree statistics
-    #
-    - [input, "4"]
-    - [contains, "la statistiko", "The header for the table must be printed"]
-
-    - - matches
-      - (?is).*radika nodo.*povas surgrimpi arbon.*
-      - "[Esperanto] The root element in our tree must be a statement"
-
-    - - matches
-      - (?is).*nombro de nodoj[^\\R]*5.*
-      - "[Esperanto] The total number of nodes in the tree is not counted correctly."
-
-    - - matches
-      - (?is).*nombro de bestoj[^\\R]*3.*
-      - "[Esperanto] The total number of animals in the tree is not counted correctly."
-
-    - - matches
-      - (?is).*nombro de deklaroj[^\\R]*2.*
-      - "[Esperanto] The total number of animals in the tree is not counted correctly."
-
-    - - matches
-      - (?is).*alteco de la arbo[^\\R]*2.*
-      - "[Esperanto] The tree depth was calculated incorrectly."
-
-    - - matches
-      - (?is).*minimuma profundo[^\\R]*1.*
-      - "[Esperanto] The minimum tree depth was calculated incorrectly."
-
-    - - matches
-      - (?is).*averaĝa profundo[^\\R]*1[,.]7.*
-      - "[Esperanto] The average tree depth was calculated incorrectly."
-
-    - [input, "0"] # Exit from the application
-    - [finish, "The program should finish when user exit"]
-    - - file delete
-      - "animals_eo.{0}"
-      - "[Esperanto] The test can't delete animals_eo.{0} file."
-
-
-  learner_created: false
-- name: test/GuessAnimalTest.java
-  visible: false
-  text: |-
-    import org.hyperskill.hstest.dynamic.DynamicTest;
-    import org.hyperskill.hstest.stage.StageTest;
-    import org.hyperskill.hstest.testcase.CheckResult;
-
-    import java.io.File;
-    import java.io.IOException;
-    import java.util.Locale;
-    import java.util.stream.Stream;
-
-    public class GuessAnimalTest extends StageTest<String> {
-
-        String[] languages = new String[]{"en", "eo"};
-
-        @DynamicTest(data = "languages")
-        CheckResult testLanguages(final String language) throws IOException {
-            final var fileName = "animals" + ("en".equals(language) ? "." : "_" + language + ".");
-
-            final var locale = Locale.getDefault();
-            final var systemLanguage = System.getProperty("user.language");
-            Locale.setDefault(new Locale(language));
-            System.setProperty("user.language", language);
-
-            deleteFiles(fileName);
-            final var result = new Scenario(language).check();
-            deleteFiles(fileName);
-
-            Locale.setDefault(locale);
-            System.setProperty("user.language", systemLanguage);
-
-            return result;
-        }
-
-        private void deleteFiles(String fileName) {
-            Stream.of("yaml", "json", "xml")
-                    .map(fileName::concat)
-                    .map(File::new)
-                    .filter(File::exists)
-                    .forEach(File::delete);
-        }
-    }
-  learner_created: false
-- name: test/Scenario.java
-  visible: false
-  text: |-
-    import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
-    import org.hyperskill.hstest.testcase.CheckResult;
-    import org.hyperskill.hstest.testing.TestedProgram;
-
-    import java.io.File;
-    import java.io.IOException;
-    import java.util.Map;
-    import java.util.function.Predicate;
-    import java.util.regex.Pattern;
-
-    import static java.text.MessageFormat.format;
-    import static java.util.function.Predicate.not;
-    import static org.hyperskill.hstest.testcase.CheckResult.correct;
-    import static org.hyperskill.hstest.testcase.CheckResult.wrong;
-
-    public class Scenario {
-        private TestedProgram main;
-        private String output = "";
-        private final File dataFile;
-        private final File scriptFile;
-
-        Scenario(String name) {
-            dataFile = new File("test/" + name + ".data.yaml");
-            scriptFile = new File("test/" + name + ".script.yaml");
-            System.out.println("Scenario '" + name + "' is started.");
-            System.out.println();
-        }
-
-        CheckResult check() {
-
-            final Object[][] data;
-            final String[][] script;
-
-            try {
-                data = new YAMLMapper().readValue(dataFile, String[][].class);
-                script = new YAMLMapper().readValue(scriptFile, String[][].class);
-            } catch (IOException e) {
-                e.printStackTrace();
-                return wrong("Cannot find the files "
-                        + dataFile.getName()
-                        + " or "
-                        + scriptFile.getName()
-                        + ", looks like you deleted or renamed it. Please, revert the changes.");
-            }
-
-            for (var values : data) {
-                for (var action : script) {
-                    final var command = action[0];
-                    switch (command) {
-                        case "start":
-                            main = new TestedProgram();
-                            output = action.length == 1
-                                    ? main.start()
-                                    : main.start(format(action[1], values).split(" "));
-                            output = output.trim().toLowerCase();
-                            continue;
-                        case "input":
-                            output = main.execute(format(action[1], values)).trim().toLowerCase();
-                            continue;
-                        case "finish":
-                            if (main.isFinished()) {
-                                continue;
-                            }
-                            return wrong(format(action[1], values));
-                        default:
-                            final Map<String, Predicate<String>> validation = Map.of(
-                                    "contains", output::contains,
-                                    "not contains", not(output::contains),
-                                    "file exists", file -> new File(file).exists(),
-                                    "file delete", file -> new File(file).delete(),
-                                    "find", pattern -> Pattern.compile(pattern).matcher(output).find(),
-                                    "matches", output::matches);
-
-                            final var expected = format(action[1], values);
-                            if (validation.get(command).test(expected)) {
-                                continue;
-                            }
-                            final var feedback = format(action[2], values) + System.lineSeparator()
-                                    + "Expected " + command + ": \"" + expected + "\"" + System.lineSeparator()
-                                    + "Actual data is: \"" + output + "\".";
-                            return wrong(feedback);
-                    }
-                }
-            }
-            return correct();
-        }
-
-    }
-  learner_created: false
-feedback_link: https://hyperskill.org/projects/132/stages/708/implement#comment
+    learner_created: false
+  - name: src/animals/input/ConcreteAsker.java
+    visible: true
+    text: |
+      package animals.input;
+      
+      import lombok.Getter;
+      import lombok.Setter;
+      import org.jetbrains.annotations.NotNull;
+      
+      import java.util.InputMismatchException;
+      import java.util.Scanner;
+      import java.util.function.Function;
+      
+      public class ConcreteAsker<T> implements Asker<T> {
+      
+          protected final Scanner scanner = new Scanner(System.in);
+      
+          @NotNull
+          @Getter
+          @Setter
+          private String inputPrompt;
+      
+          @Getter
+          @Setter
+          @NotNull
+          private String query;
+      
+          @Getter
+          @Setter
+          @NotNull
+          private Function<@NotNull String, @NotNull T> transformer;
+      
+          protected ConcreteAsker() {
+          }
+      
+          public @NotNull T ask() throws InputMismatchException {
+              System.out.println(query);
+              System.out.print(inputPrompt);
+              return transformer.apply(scanner.nextLine());
+          }
+      }
+    learner_created: false
+  - name: src/animals/input/Asker.java
+    visible: true
+    text: |
+      package animals.input;
+      
+      import org.jetbrains.annotations.NotNull;
+      
+      import java.util.InputMismatchException;
+      import java.util.function.Function;
+      import java.util.function.Supplier;
+      
+      public interface Asker<T> extends Supplier<T> {
+      
+          @Override
+          default @NotNull T get() {
+              return ask();
+          }
+      
+          @NotNull T ask() throws InputMismatchException;
+      
+          void setQuery(@NotNull String query);
+      
+          void setInputPrompt(@NotNull String inputPrompt);
+      
+          void setTransformer(@NotNull Function<@NotNull String, @NotNull T> transformer);
+      }
+    learner_created: false
+  - name: test/en.data.yaml
+    visible: false
+    text: |-
+      ---
+      - - yaml
+      - - json
+      - - xml
+    learner_created: false
+  - name: test/en.script.yaml
+    visible: false
+    text: |+
+      #
+      # There is a scenario of parameterized test for English language.
+      #
+      ---
+      - [start, "-type {0}"] # We will test three different file formats: JSON, YAML, XML
+      - - contains
+        - which animal
+        - When no Knwoledge Tree is created yet the program should ask for a favourite animals at first.
+      - [input, cat]
+      - - contains
+        - welcome to the animal
+        - After entering the favourite animal the program should welcom the user and represent itself as an expert system
+      
+      #
+      # Start the menu
+      #
+      - - matches
+        - "(?si).*play.*list.*search.*stat.*print.*exit.*"
+        - The program should display the menu
+      
+      #
+      # Let's play the game!
+      #
+      - [input, 1]
+      - - contains
+        - you think of an animal, and i guess it.
+        - The program should asks the user to think of an animal
+      - - contains
+        - press enter
+        - The computer should make a pause before the game.
+      - [input, ""]
+      
+      #
+      # After user press Enter the game started!
+      #
+      - - contains
+        - is it a cat?
+        - The very first question in the very first game should undoubtedly be about a beloved animal.
+      - [input, No] # We think of about other animal, not about the cat
+      - - contains
+        - i give up
+        - If the program cannot guess the animal, it must give up.
+      - [input, dog] # Of course, our second animal is a dog!
+      - - contains
+        - distinguishes
+        - The program should find out how one animal differs from another.
+      - - input
+        - it can climb trees
+      - - find
+        - is .+ correct for a dog?
+        - The program should clarify if the statement is correct for a dog.
+      - [input, no]
+      
+      - - contains
+        - "cat can climb trees"
+        - The program must generate the correct fact for the first animal.
+      
+      - - contains
+        - "the dog "
+        - The program must generate the correct fact for the second animal.
+      
+      - - matches
+        - "(?is).*(again|repeat|one more).*"
+        - The program should ask the user to play again
+      - [input, yes] # Yes, we will play once again
+      - [input, ""] # Press ENTER
+      - - contains
+        - can it climb trees?
+        - After the first game, the starting question should be the question of fact.
+      - [input, yes]
+      - [contains, "is it a cat?", "The program must assume that the animal is a cat."]
+      - - input
+        - |
+          no
+          lynx
+          it is living in the forest
+          yes
+          no
+      # We finish the game.
+      
+      - - matches
+        - "(?si).*play.*list.*search.*stat.*print.*exit.*"
+        - The program should display the menu
+      
+      - [input, "0"] # Exit from the application
+      - - matches
+        - "(?si).*(bye|later|soon|off|see|!).*"
+        - How about to say goodbye to the user?
+      - [finish, "The program should finish when user exit"]
+      - - file exists
+        - "animals.{0}"
+        - "The program should save knowledge tree to animals.{0} file."
+      #
+      # After the first session the program created and save the Knowledge Tree
+      # We will run the program again to make sure that all data was saved and restored correctly.
+      #
+      - [start, "-type {0}"]
+      - - not contains
+        - which animal do you like most?
+        - If the tree of knowledge exists, then the program should not ask the user about his favorite animal.
+      - - find
+        - welcome to the animal(.s)? expert system
+        - The program should immediately greet the user after starting.
+      #
+      # Start the menu
+      #
+      - - matches
+        - "(?si).*play.*list.*search.*stat.*print.*exit.*"
+        - The program should display the menu
+      
+      #
+      # Let's check which animals are now in our knowledge tree.
+      #
+      - [input, "2"]
+      - - matches
+        - (?si).*cat.*dog.*lynx.*
+        - The program should print a list of all animals in alphabetical order.
+      
+      #
+      # Check the facts about the animal
+      #
+      - [input, "3"]
+      - - find
+        - enter.* animal
+        - The program should ask the user to enter the name of the animal
+      - [input, lynx]
+      - - contains
+        - facts about the lynx
+        - The program must find the animal that is in the knowledge tree.
+      - - contains
+        - it can climb trees
+        - The program did not print the first fact about the animal
+      - - contains
+        - it is living in the forest
+        - The program did not print the second fact about the animal
+      
+      #
+      # Check the knowledge tree statistics
+      #
+      - [input, "4"]
+      - [contains, "knowledge tree", "The header for the table must be printed"]
+      
+      - - find
+        - (?i)root node.*It can climb trees
+        - The root element in our tree must be a statement
+      
+      - - find
+        - number of nodes.*\b5\b
+        - The total number of nodes in the tree is not counted correctly.
+      
+      - - find
+        - number of animals\D*3\b
+        - The total number of animals in the tree is not counted correctly.
+      
+      - - find
+        - number of statements\D*2\b
+        - The total number of animals in the tree is not counted correctly.
+      
+      - - find
+        - height of the tree\D*2\b
+        - The tree depth was calculated incorrectly.
+      
+      - - find
+        - minimum\D*1\b
+        - The minimum tree depth was calculated incorrectly.
+      
+      - - find
+        - average\D*1[,.]7
+        - The average tree depth was calculated incorrectly.
+      
+      - [input, "0"] # Exit from the application
+      - [finish, "The program should finish when user exit"]
+      - - file delete
+        - "animals.{0}"
+        - "The test can't delete animals.{0} file."
+    
+
+    learner_created: false
+  - name: test/eo.data.yaml
+    visible: false
+    text: |-
+      ---
+      - - yaml
+      - - json
+      - - xml
+    learner_created: false
+  - name: test/eo.script.yaml
+    visible: false
+    text: |+
+      #
+      # There is a scenario of parameterized test for Esperanto language.
+      #
+      ---
+      - [start, "-type {0}"] # We will test three different file formats: JSON, YAML, XML
+      - - contains
+        - "kiun beston vi plej ŝatas?"
+        - "[Esperanto] When no Knowledge Tree is created yet the program should ask for a favourite animals at first."
+      - [input, kato]
+      - - contains
+        - bonvenon al la sperta sistemo de la besto!
+        - "[Esperanto] After entering the favourite animal the program should welcome the user and represent itself as an expert system"
+      
+      #
+      # Start the menu
+      #
+      - - matches
+        - (?si).*Ludi.*Listo.*Serĉi.*Kalkuli.*Eliri.*
+        - "[Esperanto] The program should display the menu"
+      
+      #
+      # Let's play the game!
+      #
+      - [input, 1]
+      - - contains
+        - vi pensu pri besto, kaj mi divenos ĝin.
+        - "[Esperanto] The program should asks the user to think of an animal"
+      - - contains
+        - premu enen kiam vi pretas.
+        - "[Esperanto] The computer should make a pause before the game."
+      - [input, ""]
+      
+      #
+      # After user press Enter the game started!
+      #
+      - - contains
+        - ĉu ĝi estas kato?
+        - "[Esperanto] The very first question in the very first game should undoubtedly be about a beloved animal."
+      - [input, ne] # We think of about other animal, not about the cat
+      - - contains
+        - mi rezignas. kiun beston vi havas en la kapo?
+        - "[Esperanto] If the program cannot guess the animal, it must give up."
+      - [input, hundo] # Of course, our second animal is a dog!
+      - - contains
+        - indiku fakton, kiu distingas kato de hundo
+        - "[Esperanto] The program should find out how one animal differs from another."
+      - - input
+        - ĝi povas surgrimpi arbon
+      - - contains
+        - ĉu la aserto ĝustas por la hundo?
+        - "[Esperanto] The program should clarify if the statement is correct for a dog."
+      - [input, ne]
+      
+      - - contains
+        - la kato povas surgrimpi arbon
+        - The program must generate the correct fact for the first animal.
+      
+      - - contains
+        - la hundo ne povas surgrimpi arbon
+        - "[Esperanto] The program must generate the correct fact for the second animal."
+      
+      - - matches
+        - "(?is).*(denove|ripeti|ankoraŭ).*"
+        - "[Esperanto] The program should ask the user to play again"
+      - [input, jes] # Yes, we will play once again
+      - [input, ""] # Press ENTER
+      - - contains
+        - povas surgrimpi arbon?
+        - "[Esperanto] After the first game, the starting question should be the question of fact."
+      - [input, jes]
+      - [contains, "ĉu ĝi estas kato?", "[Esperanto] The program must assume that the animal is a cat."]
+      - - input
+        - |
+          ne
+          linko
+          ĝi loĝas en la arbaro
+          jes
+          ne
+      # We finish the game.
+      - - matches
+        - (?si).*Ludi.*Listo.*Serĉi.*Kalkuli.*Eliri.*
+        - "[Esperanto] The program should display the menu"
+      - [input, "0"] # Exit from the application
+      - - matches
+        - "(?si).*(ĝis|estis).*"
+        - "[Esperanto] How about to say goodbye to the user?"
+      - [finish, "The program should finish when user exit"]
+      - - file exists
+        - "animals_eo.{0}"
+        - "The program should save knowledge tree to animals_eo.{0} file."
+      #
+      # After the first session the program created and save the Knowledge Tree
+      # We will run the program again to make sure that all data was saved and restored correctly.
+      #
+      - [start, "-type {0}"]
+      - - not contains
+        - kiun beston vi plej ŝatas?
+        - "[Esperanto] If the tree of knowledge exists, then the program should not ask the user about his favorite animal."
+      - - contains
+        - bonvenon al la sperta sistemo de la besto!
+        - "[Esperanto] The program should immediately greet the user after starting."
+      - - matches
+        - (?si).*Ludi.*Listo.*Serĉi.*Kalkuli.*Eliri.*
+        - "[Esperanto] The program should display the menu"
+      
+      #
+      # Let's check which animals are now in our knowledge tree.
+      #
+      - [input, "2"]
+      - - matches
+        - (?si).*hundo.*kato.*linko.*
+        - "[Esperanto] The program should print a list of all animals in alphabetical order."
+      
+      #
+      # Check the facts about the animal
+      #
+      - [input, "3"]
+      - - find
+        - enigu .* besto
+        - "[Esperanto] The program should ask the user to enter the name of the animal"
+      - [input, linko]
+      - - contains
+        - faktoj pri la linko
+        - "[Esperanto] The program must find the animal that is in the knowledge tree."
+      - - contains
+        - ĝi povas surgrimpi arbon
+        - "[Esperanto] The program did not print the first fact about the animal"
+      - - contains
+        - ĝi loĝas en la arbaro
+        - "[Esperanto] The program did not print the second fact about the animal"
+      
+      #
+      # Check the knowledge tree statistics
+      #
+      - [input, "4"]
+      - [contains, "la statistiko", "The header for the table must be printed"]
+      
+      - - matches
+        - (?is).*radika nodo.*povas surgrimpi arbon.*
+        - "[Esperanto] The root element in our tree must be a statement"
+      
+      - - matches
+        - (?is).*nombro de nodoj[^\\R]*5.*
+        - "[Esperanto] The total number of nodes in the tree is not counted correctly."
+      
+      - - matches
+        - (?is).*nombro de bestoj[^\\R]*3.*
+        - "[Esperanto] The total number of animals in the tree is not counted correctly."
+      
+      - - matches
+        - (?is).*nombro de deklaroj[^\\R]*2.*
+        - "[Esperanto] The total number of animals in the tree is not counted correctly."
+      
+      - - matches
+        - (?is).*alteco de la arbo[^\\R]*2.*
+        - "[Esperanto] The tree depth was calculated incorrectly."
+      
+      - - matches
+        - (?is).*minimuma profundo[^\\R]*1.*
+        - "[Esperanto] The minimum tree depth was calculated incorrectly."
+      
+      - - matches
+        - (?is).*averaĝa profundo[^\\R]*1[,.]7.*
+        - "[Esperanto] The average tree depth was calculated incorrectly."
+      
+      - [input, "0"] # Exit from the application
+      - [finish, "The program should finish when user exit"]
+      - - file delete
+        - "animals_eo.{0}"
+        - "[Esperanto] The test can't delete animals_eo.{0} file."
+    
+
+    learner_created: false
+  - name: test/GuessAnimalTest.java
+    visible: false
+    text: |-
+      import org.hyperskill.hstest.dynamic.DynamicTest;
+      import org.hyperskill.hstest.stage.StageTest;
+      import org.hyperskill.hstest.testcase.CheckResult;
+      
+      import java.io.File;
+      import java.io.IOException;
+      import java.util.Locale;
+      import java.util.stream.Stream;
+      
+      public class GuessAnimalTest extends StageTest<String> {
+      
+          String[] languages = new String[]{"en", "eo"};
+      
+          @DynamicTest(data = "languages")
+          CheckResult testLanguages(final String language) throws IOException {
+              final var fileName = "animals" + ("en".equals(language) ? "." : "_" + language + ".");
+      
+              final var locale = Locale.getDefault();
+              final var systemLanguage = System.getProperty("user.language");
+              Locale.setDefault(new Locale(language));
+              System.setProperty("user.language", language);
+      
+              deleteFiles(fileName);
+              final var result = new Scenario(language).check();
+              deleteFiles(fileName);
+      
+              Locale.setDefault(locale);
+              System.setProperty("user.language", systemLanguage);
+      
+              return result;
+          }
+      
+          private void deleteFiles(String fileName) {
+              Stream.of("yaml", "json", "xml")
+                      .map(fileName::concat)
+                      .map(File::new)
+                      .filter(File::exists)
+                      .forEach(File::delete);
+          }
+      }
+    learner_created: false
+  - name: test/Scenario.java
+    visible: false
+    text: |-
+      import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+      import org.hyperskill.hstest.testcase.CheckResult;
+      import org.hyperskill.hstest.testing.TestedProgram;
+      
+      import java.io.File;
+      import java.io.IOException;
+      import java.util.Map;
+      import java.util.function.Predicate;
+      import java.util.regex.Pattern;
+      
+      import static java.text.MessageFormat.format;
+      import static java.util.function.Predicate.not;
+      import static org.hyperskill.hstest.testcase.CheckResult.correct;
+      import static org.hyperskill.hstest.testcase.CheckResult.wrong;
+      
+      public class Scenario {
+          private TestedProgram main;
+          private String output = "";
+          private final File dataFile;
+          private final File scriptFile;
+      
+          Scenario(String name) {
+              dataFile = new File("test/" + name + ".data.yaml");
+              scriptFile = new File("test/" + name + ".script.yaml");
+              System.out.println("Scenario '" + name + "' is started.");
+              System.out.println();
+          }
+      
+          CheckResult check() {
+      
+              final Object[][] data;
+              final String[][] script;
+      
+              try {
+                  data = new YAMLMapper().readValue(dataFile, String[][].class);
+                  script = new YAMLMapper().readValue(scriptFile, String[][].class);
+              } catch (IOException e) {
+                  e.printStackTrace();
+                  return wrong("Cannot find the files "
+                          + dataFile.getName()
+                          + " or "
+                          + scriptFile.getName()
+                          + ", looks like you deleted or renamed it. Please, revert the changes.");
+              }
+      
+              for (var values : data) {
+                  for (var action : script) {
+                      final var command = action[0];
+                      switch (command) {
+                          case "start":
+                              main = new TestedProgram();
+                              output = action.length == 1
+                                      ? main.start()
+                                      : main.start(format(action[1], values).split(" "));
+                              output = output.trim().toLowerCase();
+                              continue;
+                          case "input":
+                              output = main.execute(format(action[1], values)).trim().toLowerCase();
+                              continue;
+                          case "finish":
+                              if (main.isFinished()) {
+                                  continue;
+                              }
+                              return wrong(format(action[1], values));
+                          default:
+                              final Map<String, Predicate<String>> validation = Map.of(
+                                      "contains", output::contains,
+                                      "not contains", not(output::contains),
+                                      "file exists", file -> new File(file).exists(),
+                                      "file delete", file -> new File(file).delete(),
+                                      "find", pattern -> Pattern.compile(pattern).matcher(output).find(),
+                                      "matches", output::matches);
+      
+                              final var expected = format(action[1], values);
+                              if (validation.get(command).test(expected)) {
+                                  continue;
+                              }
+                              final var feedback = format(action[2], values) + System.lineSeparator()
+                                      + "Expected " + command + ": \"" + expected + "\"" + System.lineSeparator()
+                                      + "Actual data is: \"" + output + "\".";
+                              return wrong(feedback);
+                      }
+                  }
+              }
+              return correct();
+          }
+      
+      }
+    learner_created: false
+feedback_link: https://hyperskill.org/learn/step/11084#comment
 status: Unchecked
 record: -1
