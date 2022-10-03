@@ -1,4 +1,4 @@
-package AnimalGuesser;
+package animal.app;
 
 public class Main {
     public static void main(String[] args) {
