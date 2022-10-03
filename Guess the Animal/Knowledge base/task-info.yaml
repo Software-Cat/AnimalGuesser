@@ -1,0 +1,767 @@
+type: edu
+files:
+- name: src/animals/Main.java
+  visible: true
+  text: |
+    package animals;
+
+    import animals.base.Application;
+
+    public class Main {
+
+        public static void main(String[] args) throws InterruptedException {
+            new Application().run();
+        }
+    }
+  learner_created: false
+- name: src/animals/greet/TimedGreeter.java
+  visible: true
+  text: |
+    package animals.greet;
+
+    import animals.util.Range;
+
+    import java.time.LocalTime;
+    import java.util.List;
+    import java.util.Random;
+
+    public class TimedGreeter implements Greeter {
+
+        private final Range<Integer> MORNING = new Range<>(5, 12);
+        private final Range<Integer> AFTERNOON = new Range<>(12, 18);
+
+        private final Random random = new Random();
+
+        @Override
+        public void hello() {
+            int currentHour = LocalTime.now().getHour();
+
+            if (MORNING.isInRange(currentHour)) {
+                System.out.println("Good morning!");
+            } else if (AFTERNOON.isInRange(currentHour)) {
+                System.out.println("Good afternoon!");
+            } else {
+                System.out.println("Good evening!");
+            }
+        }
+
+        @Override
+        public void goodbye() {
+            System.out.println(List.of("Have a nice day!", "See you soon!", "Bye!").get(random.nextInt(3)));
+        }
+    }
+  learner_created: false
+- name: src/animals/util/Range.java
+  visible: true
+  text: |
+    package animals.util;
+
+    import org.jetbrains.annotations.NotNull;
+    import org.jetbrains.annotations.Nullable;
+
+    public class Range<T extends Number> {
+
+        @NotNull
+        private final T boundOne;
+
+        @NotNull
+        private final T boundTwo;
+
+        private final boolean lowerInclusive;
+
+        private final boolean upperInclusive;
+
+        public Range(@NotNull T boundOne, @NotNull T boundTwo, boolean lowerInclusive, boolean upperInclusive) {
+            this.boundOne = boundOne;
+            this.boundTwo = boundTwo;
+            this.lowerInclusive = lowerInclusive;
+            this.upperInclusive = upperInclusive;
+        }
+
+        public Range(@NotNull T boundOne, @NotNull T boundTwo) {
+            this(boundOne, boundTwo, true, false);
+        }
+
+        public T getLowerBound() {
+            if (boundOneDouble() < boundTwoDouble()) {
+                return boundOne;
+            } else {
+                return boundTwo;
+            }
+        }
+
+        public T getUpperBound() {
+            if (boundOneDouble() > boundTwoDouble()) {
+                return boundOne;
+            } else {
+                return boundTwo;
+            }
+        }
+
+        public <U extends Number> boolean isInRange(@Nullable final U number) {
+            if (number == null) {
+                return false;
+            }
+
+            double doubleValue = number.doubleValue();
+
+            boolean satisfyLower = false;
+            boolean satisfyUpper = false;
+
+            if (lowerInclusive) {
+                satisfyLower = doubleValue >= getLowerBound().doubleValue();
+            } else {
+                satisfyLower = doubleValue > getLowerBound().doubleValue();
+            }
+
+            if (upperInclusive) {
+                satisfyUpper = doubleValue <= getUpperBound().doubleValue();
+            } else {
+                satisfyUpper = doubleValue < getUpperBound().doubleValue();
+            }
+
+            return satisfyLower && satisfyUpper;
+        }
+
+        private double boundOneDouble() {
+            return boundOne.doubleValue();
+        }
+
+        private double boundTwoDouble() {
+            return boundTwo.doubleValue();
+        }
+    }
+  learner_created: false
+- name: src/animals/base/Animal.java
+  visible: true
+  text: |
+    package animals.base;
+
+    import animals.linguistics.NounPhrase;
+    import org.jetbrains.annotations.NotNull;
+
+
+    public class Animal {
+
+        @NotNull
+        private final NounPhrase species;
+
+        public Animal(@NotNull String species) {
+            this.species = NounPhrase.parsePhrase(species);
+        }
+
+        @Override
+        public String toString() {
+            return species.toString();
+        }
+    }
+  learner_created: false
+- name: src/animals/base/Application.java
+  visible: true
+  text: |
+    package animals.base;
+
+    import animals.greet.Greeter;
+    import animals.greet.TimedGreeter;
+    import animals.input.Asker;
+    import animals.input.AskerBuilder;
+
+    import java.util.InputMismatchException;
+    import java.util.List;
+    import java.util.Random;
+
+    public class Application implements Runnable {
+
+        private final Greeter greeter = new TimedGreeter();
+
+        private final Asker<Animal> animalAsker = AskerBuilder.asker()
+                .withQuery("Enter an animal:")
+                .addTransformer(String::trim)
+                .addPredicate((String s) -> !s.isBlank())
+                .addTransformer(Animal::new)
+                .build();
+
+        private final Asker<Boolean> yesNoAsker = AskerBuilder.asker()
+                .withQuery("Is it a ...?")
+                .addTransformer(String::trim)
+                .addPredicate((String s) -> !s.isBlank())
+                .addTransformer((String s) -> {
+                    s = s.toLowerCase();
+                    s = s.replaceFirst("\\p{Punct}", "");
+                    switch (s) {
+                        case "y", "yes", "yeah", "yep", "sure", "right", "affirmative",
+                                "correct", "indeed", "you bet", "exactly", "you said it":
+                            return true;
+                        case "n", "no", "no way", "nah", "nope", "negative",
+                                "i don't think so", "yeah no":
+                            return false;
+                    }
+                    throw new InputMismatchException(
+                            "The input (\"%s\") cannot be converted to a valid boolean response.".formatted(s));
+                })
+                .persistent(true)
+                .withRetryPhrases(List.of(
+                        "I'm not sure if I caught you: was it yes or no?",
+                        "Funny, I still don't understand, is it yes or no?",
+                        "Oh, it is too complicated for me: just tell me yes or no.",
+                        "Could you please simply say yes or no?",
+                        "Oh, no, don't try to confuse me: say yes or no."))
+                .build();
+
+        @Override
+        public void run() {
+            greeter.hello();
+            System.out.println();
+
+            Animal animal = animalAsker.ask();
+
+            yesNoAsker.setQuery("Is it %s?".formatted(animal));
+            if (yesNoAsker.ask()) {
+                System.out.println("You answered: Yes");
+            } else {
+                System.out.println("You answered: No");
+            }
+
+            System.out.println();
+            greeter.goodbye();
+        }
+    }
+  learner_created: false
+- name: src/animals/input/AskerBuilder.java
+  visible: true
+  text: |
+    package animals.input;
+
+    import org.jetbrains.annotations.NotNull;
+
+    import java.util.InputMismatchException;
+    import java.util.List;
+    import java.util.function.Function;
+    import java.util.function.Predicate;
+
+    public final class AskerBuilder<T> {
+
+        @NotNull
+        private String inputPrompt = "> ";
+
+        @NotNull
+        private String query = "";
+
+        private Function<@NotNull String, @NotNull T> transformer;
+
+        private boolean persistent = false;
+
+        private List<String> retryPhrases = List.of("Please enter a valid response.");
+
+        private AskerBuilder() {
+        }
+
+        public static AskerBuilder<String> asker() {
+            AskerBuilder<String> builder = new AskerBuilder<>();
+            return builder.withTransformer(Function.identity());
+        }
+
+        public AskerBuilder<T> withInputPrompt(String inputPrompt) {
+            this.inputPrompt = inputPrompt;
+            return this;
+        }
+
+        public AskerBuilder<T> withQuery(String query) {
+            this.query = query;
+            return this;
+        }
+
+        /**
+         * Composes the new transformer after already-existing transformers.
+         *
+         * @param transformer the new transformer
+         * @param <R>         the type returned by the new transformer
+         * @return builder
+         */
+        public <R> AskerBuilder<R> addTransformer(Function<T, R> transformer) {
+            Function<String, R> newTransformer = this.transformer.andThen(transformer);
+            return new AskerBuilder<R>().withQuery(query).withInputPrompt(inputPrompt).withTransformer(newTransformer);
+        }
+
+        /**
+         * Composes the new predicate after already-existing transformers. An exception is thrown if the predicate fails.
+         *
+         * @param predicate the new predicate
+         * @return builder
+         */
+        public AskerBuilder<T> addPredicate(Predicate<T> predicate) {
+            return addTransformer((T t) -> {
+                if (!predicate.test(t)) {
+                    throw new InputMismatchException("The input (\"%s\") does not satisfy the predicate (%s).".formatted(t, predicate));
+                }
+                return t;
+            });
+        }
+
+        public AskerBuilder<T> persistent(boolean persistent) {
+            this.persistent = persistent;
+            return this;
+        }
+
+        public AskerBuilder<T> withRetryPhrases(List<String> retryPhrases) {
+            this.retryPhrases = retryPhrases;
+            return this;
+        }
+
+        /**
+         * Completely overwrites the previous transformer with the new one.
+         *
+         * @param transformer the new transformer
+         * @return builder
+         */
+        private AskerBuilder<T> withTransformer(Function<String, T> transformer) {
+            this.transformer = transformer;
+            return this;
+        }
+
+        public Asker<T> build() {
+            Asker<T> asker;
+
+            if (persistent) {
+                PersistentAsker<T> persistentAsker = new PersistentAsker<>();
+                persistentAsker.setRetryPhrases(retryPhrases);
+                asker = persistentAsker;
+            } else {
+                asker = new ConcreteAsker<>();
+            }
+
+            asker.setQuery(query);
+            asker.setInputPrompt(inputPrompt);
+            asker.setTransformer(transformer);
+
+            return asker;
+        }
+    }
+  learner_created: false
+- name: src/animals/input/PersistentAsker.java
+  visible: true
+  text: "package animals.input;\n\nimport lombok.Getter;\nimport lombok.Setter;\n\
+    import org.jetbrains.annotations.NotNull;\n\nimport java.util.InputMismatchException;\n\
+    import java.util.List;\nimport java.util.Random;\n\npublic class PersistentAsker<T>\
+    \ extends ConcreteAsker<T> {\n\n    private final Random random = new Random();\n\
+    \n    @NotNull\n    @Getter\n    @Setter\n    private List<String> retryPhrases;\n\
+    \n    protected PersistentAsker() {\n    }\n\n    @Override\n    public @NotNull\
+    \ T ask() throws InputMismatchException {\n        System.out.println(getQuery());\n\
+    \        \n        T response = null;\n        boolean responseIsValid = false;\n\
+    \n        while (!responseIsValid) {\n            try {\n                System.out.print(getInputPrompt());\n\
+    \                response = getTransformer().apply(scanner.nextLine());\n\n  \
+    \              // This line won't be reached if the super.ask() throws an exception.\n\
+    \                responseIsValid = true;\n            } catch (InputMismatchException\
+    \ e) {\n                System.out.println(retryPhrases.get(random.nextInt(retryPhrases.size())));\n\
+    \            }\n        }\n\n        return response;\n    }\n}\n"
+  learner_created: false
+- name: src/animals/input/ConcreteAsker.java
+  visible: true
+  text: |
+    package animals.input;
+
+    import lombok.Getter;
+    import lombok.Setter;
+    import org.jetbrains.annotations.NotNull;
+
+    import java.util.InputMismatchException;
+    import java.util.Scanner;
+    import java.util.function.Function;
+
+    public class ConcreteAsker<T> implements Asker<T> {
+
+        protected final Scanner scanner = new Scanner(System.in);
+
+        @NotNull
+        @Getter
+        @Setter
+        private String inputPrompt;
+
+        @Getter
+        @Setter
+        @NotNull
+        private String query;
+
+        @Getter
+        @Setter
+        @NotNull
+        private Function<@NotNull String, @NotNull T> transformer;
+
+        protected ConcreteAsker() {
+        }
+
+        public @NotNull T ask() throws InputMismatchException {
+            System.out.println(query);
+            System.out.print(inputPrompt);
+            return transformer.apply(scanner.nextLine());
+        }
+    }
+  learner_created: false
+- name: src/animals/input/Asker.java
+  visible: true
+  text: |
+    package animals.input;
+
+    import org.jetbrains.annotations.NotNull;
+
+    import java.util.InputMismatchException;
+    import java.util.function.Function;
+    import java.util.function.Supplier;
+
+    public interface Asker<T> extends Supplier<T> {
+
+        @Override
+        default @NotNull T get() {
+            return ask();
+        }
+
+        @NotNull T ask() throws InputMismatchException;
+
+        void setQuery(@NotNull String query);
+
+        void setInputPrompt(@NotNull String inputPrompt);
+
+        void setTransformer(@NotNull Function<@NotNull String, @NotNull T> transformer);
+    }
+  learner_created: false
+- name: test/file-formats.data.yaml
+  visible: false
+  text: |-
+    ---
+    - - json
+    - - xml
+    - - yaml
+  learner_created: false
+- name: test/file-formats.script.yaml
+  visible: false
+  text: |-
+    #
+    # This is a script to test file formats: JSON, YAML, XML.
+    #
+    ---
+    - [start, "-type {0}"]
+    - [contains, "?", "The program should asks the user for a favourite animal"]
+    - [input, cat]
+    - - matches
+      - (?is).*1.*Play.*List.*Search.*stat.*Exit.*
+      - The program should print the menu
+    - [input, "1"]
+    - - contains
+      - You think of an animal, and I guess it.
+      - The program should asks the user to think of an animal
+    - [input, ""] # Press Enter to start the game
+
+    #
+    # The first game started
+    #
+    - - contains
+      - Is it a cat?
+      - The program should asks the user is it the cat
+    - [input, no]
+    - - contains
+      - I give up. What animal do you have in mind?
+      - The program should give up
+    - [input, dog]
+    - - contains
+      - Specify a fact that distinguishes
+      - The program should ask a question to distinguishes a dog from a cat
+    - [input, It can climbs tree]
+    - - contains
+      - Is the statement correct for a dog?
+      - The program should clarify if the statement is correct for a dog.
+    - [input, No]
+    - - matches
+      - (?si).*(again|repeat|one more game).*
+      - The program should ask to play again
+    - [input, Yes]
+    - - contains
+      - You think of an animal, and I guess it.
+      - The program should asks the user to think of an animal
+    - [input, ""] # Press Enter to start the game
+
+    #
+    # The second game started
+    #
+    - - contains
+      - Can it climbs tree?
+      - The only question in the knowledge tree should be "Can it climbs tree?"
+    - [input, Yes]
+    - - contains
+      - Is it a cat?
+      - The program doesn't print the expected message
+    - [input, No]
+    - - contains
+      - I give up. What animal do you have in mind?
+      - The program should give up
+    - - input
+      - a lynx
+    - - input
+      - It is living in the forest
+    - - contains
+      - Is the statement correct for a lynx?
+      - The program doesn't print the expected message
+    - [input, yes]
+    - [input, no]
+    - - matches
+      - (?is).*1.*Play.*List.*Search.*stat.*0.*Exit.*
+      - The program should print the menu after the user leave the game
+    - - input
+      - "0"
+    - - finish
+      - The program should finish when user select 0. Exit
+
+    - - file exists
+      - "animals.{0}"
+      - "The program should save knowledge tree to animals.{0} file."
+
+    #
+    # Start the program again and load the Knowledge Tree
+    #
+    - - start
+      - "-type {0}"
+    - - not contains
+      - Which animal do you like most?
+      - If knowledge base is exist the program should not asks the user for a favourite animal
+    - - contains
+      - Welcome to the animal
+      - The program doesn't print the expected message
+    - - matches
+      - (?is).*1.*Play.*List.*Search.*stat.*Exit.*
+      - The program should print the menu
+    - - input
+      - "0"
+    - - finish
+      - The program should finish when user refuse the new game
+    - - file delete
+      - "animals.{0}"
+      - "The test can't delete animals.{0} file."
+  learner_created: false
+- name: test/GuessAnimalTest.java
+  visible: false
+  text: |-
+    import org.hyperskill.hstest.dynamic.DynamicTest;
+    import org.hyperskill.hstest.stage.StageTest;
+    import org.hyperskill.hstest.testcase.CheckResult;
+
+    import java.io.IOException;
+
+    public class GuessAnimalTest extends StageTest<String> {
+        final String[] script = new String[]{
+                "file-formats",
+                "menu"
+        };
+
+        @DynamicTest(data = "script")
+        CheckResult runScripts(final String script) throws IOException {
+            return new Scenario(script).check();
+        }
+
+    }
+  learner_created: false
+- name: test/menu.data.yaml
+  visible: false
+  text: |-
+    ---
+    #
+    # Test case #1
+    #
+    - - cat
+      - |
+        no
+        shark
+        it is a mammal
+        no
+        yes
+
+        yes
+        no
+        fox
+        it is living in the forest
+        yes
+        yes
+
+        yes
+        no
+        no
+        dog
+        it can climb trees
+        no
+        yes
+
+        yes
+        yes
+        no
+        wolf
+        it has a long bushy tail
+        no
+        yes
+
+        yes
+        yes
+        no
+        no
+        hare
+        it is a shy animal
+        yes
+        no
+
+      #
+      # 2. List of all animals
+      #
+      - "(?si).*cat.*dog.*hare.*shark.*wolf.*"
+
+      #
+      # 3. Search for an animal
+      #
+      - wolf
+      - "(?si).*is a mammal.*doesn't have a long bushy tail.*isn't a shy animal.*"
+
+      #
+      # Data for the Knowledge Tree statistics
+      #
+      - It is a mammal
+      - "11"
+      - "6"
+      - "5"
+      - "4"
+      - "1"
+      - "3"
+  learner_created: false
+- name: test/menu.script.yaml
+  visible: false
+  text: |
+    ---
+    - [start]
+    - [input, "{0}"]  # Favourite animal
+    - [input, "1"]    # Play the game
+    - [input, ""]     # Press Enter
+    - [input, "{1}"]  # Play and fill the knowledge tree
+    #
+    # After filling the tree, we can test all the menu items.
+    #
+    - - matches
+      - "(?is).*1.*Play.*List.*Search.*Calc.*Print.*Exit.*"
+      - The program should print the menu
+
+    #
+    # 2. List of all animals
+    #
+    - [input, "2"]
+    - [matches, "{2}", The program should print a list of all animals in alphabetical order.]
+
+    #
+    # 3. Search for an animal
+    #
+    - [input, "3"]
+    - [contains, "Enter the animal", The program should ask for an animals to search.]
+    - [input, "{3}"]
+    - [matches, "{4}", The program should print facts about the animal]
+
+    #
+    # 4. Knowledge Tree stats
+    #
+    - [input, "4"]
+    - [contains, "The Knowledge Tree stats", The program should print title for statistics]
+    - [matches, "(?is).*root node.*{5}.*", "The root node should be {5}"]
+    - [matches, "(?is).*number of nodes[^\\\\R]*{6}.*", "The total number of nodes should be {6}"]
+    - [matches, "(?is).*number of animals[^\\\\R]*{7}.*", "The total number of animals should be {7}"]
+    - [matches, "(?is).*number of statements[^\\\\R]*{8}.*", "The total number of statements should be {8}"]
+    - [matches, "(?is).*height of the tree[^\\\\R]*{9}.*", "The height of the tree should be {9}"]
+    - [matches, "(?is).*minimum[^\\\\R]*{10}.*", "The minimum depth should be {10}"]
+    - [matches, "(?is).*average[^\\\\R]*{11}.*", "The average depth should be {11}"]
+  learner_created: false
+- name: test/Scenario.java
+  visible: false
+  text: |-
+    import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+    import org.hyperskill.hstest.testcase.CheckResult;
+    import org.hyperskill.hstest.testing.TestedProgram;
+
+    import java.io.File;
+    import java.io.IOException;
+    import java.util.Map;
+    import java.util.function.Predicate;
+    import java.util.regex.Pattern;
+
+    import static java.text.MessageFormat.format;
+    import static java.util.function.Predicate.not;
+    import static org.hyperskill.hstest.testcase.CheckResult.correct;
+    import static org.hyperskill.hstest.testcase.CheckResult.wrong;
+
+    public class Scenario {
+        private TestedProgram main;
+        private String output = "";
+        private final File dataFile;
+        private final File scriptFile;
+
+        Scenario(String name) {
+            dataFile = new File("test/" + name + ".data.yaml");
+            scriptFile = new File("test/" + name + ".script.yaml");
+            System.out.println("Scenario '" + name + "' is started.");
+            System.out.println();
+        }
+
+        CheckResult check() {
+
+            final Object[][] data;
+            final String[][] script;
+
+            try {
+                data = new YAMLMapper().readValue(dataFile, String[][].class);
+                script = new YAMLMapper().readValue(scriptFile, String[][].class);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return wrong("Cannot find the files "
+                        + dataFile.getName()
+                        + " or "
+                        + scriptFile.getName()
+                        + ", looks like you deleted or renamed it. Please, revert the changes.");
+            }
+
+            for (var values : data) {
+                for (var action : script) {
+                    final var command = action[0];
+                    switch (command) {
+                        case "start":
+                            main = new TestedProgram();
+                            output = action.length == 1
+                                    ? main.start()
+                                    : main.start(format(action[1], values).split(" "));
+                            output = output.trim();
+                            continue;
+                        case "input":
+                            output = main.execute(format(action[1], values)).trim();
+                            continue;
+                        case "finish":
+                            if (main.isFinished()) {
+                                continue;
+                            }
+                            return wrong(format(action[1], values));
+                        default:
+                            final Map<String, Predicate<String>> validation = Map.of(
+                                    "contains", output::contains,
+                                    "not contains", not(output::contains),
+                                    "file exists", file -> new File(file).exists(),
+                                    "file delete", file -> new File(file).delete(),
+                                    "find", pattern -> Pattern.compile(pattern).matcher(output).find(),
+                                    "matches", output::matches);
+
+                            final var expected = format(action[1], values);
+                            if (validation.get(command).test(expected)) {
+                                continue;
+                            }
+                            final var feedback = format(action[2], values) + System.lineSeparator()
+                                    + "Expected " + command + ": \"" + expected + "\"" + System.lineSeparator()
+                                    + "Actual data is: \"" + output + "\".";
+                            return wrong(feedback);
+                    }
+                }
+            }
+            return correct();
+        }
+
+    }
+  learner_created: false
+feedback_link: https://hyperskill.org/projects/132/stages/707/implement#comment
+status: Unchecked
+record: -1

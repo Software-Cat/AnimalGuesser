@@ -1,0 +1,36 @@
+#
+# The data for the complete scenario from the start to the finish
+#
+---
+- - "cat"
+  - "DOG"
+  - "a cat"
+  - "a dog"
+  - "It can climb trees"
+  - "ha"
+  - "no"
+  - "The cat can climb trees"
+  - "The dog can't climb trees"
+  - "Can it climb trees?"
+
+- - "hare"
+  - "wolf"
+  - "a hare"
+  - "a wolf"
+  - "It is a shy animal"
+  - "nej"
+  - "no"
+  - "The hare is a shy animal"
+  - "The wolf isn't a shy animal"
+  - "Is it a shy animal?"
+
+- - "a lynx"
+  - "an unicorN"
+  - "a lynx"
+  - "an unicorn"
+  - "It is a fabulous animal?"
+  - "of c"
+  - "yes"
+  - "The lynx isn't a fabulous animal"
+  - "The unicorn is a fabulous animal"
+  - "Is it a fabulous animal?"

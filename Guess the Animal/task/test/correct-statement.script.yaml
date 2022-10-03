@@ -1,0 +1,17 @@
+#
+# This is a script to test correct statements.
+#
+---
+- [start]
+- [input, cat]
+- [input, dog]
+- - contains
+  - Specify a fact that distinguishes a cat from a dog.
+  - The program should asks the user for a fact
+#
+# Here we substitute all correct statements from data file
+#
+- [input, "{0}"]
+- - contains
+  - correct for a dog?
+  - The program should clarify if the statement is correct for a dog.
