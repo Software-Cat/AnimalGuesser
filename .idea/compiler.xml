@@ -1,6 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Gradle Imported" enabled="true">
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$PROJECT_DIR$/../../../ProgramData/Gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.24/13a394eed5c4f9efb2a6d956e2086f1d81e857d9/lombok-1.18.24.jar" />
+        </processorPath>
+        <module name="AnimalGuesser.app.test" />
+        <module name="AnimalGuesser.linguistics.test" />
+        <module name="AnimalGuesser.input.main" />
+        <module name="AnimalGuesser.linguistics.main" />
+        <module name="AnimalGuesser.utils.main" />
+        <module name="AnimalGuesser.app.main" />
+        <module name="AnimalGuesser.input.test" />
+        <module name="AnimalGuesser.utils.test" />
+      </profile>
+    </annotationProcessing>
     <bytecodeTargetLevel target="18" />
   </component>
 </project>
