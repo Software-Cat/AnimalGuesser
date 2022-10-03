@@ -1,3 +1,6 @@
+# These are explicitly windows files and should use crlf
+*.bat           text eol=crlf
+
 # Java sources
 *.java          text diff=java
 *.gradle        text diff=java
