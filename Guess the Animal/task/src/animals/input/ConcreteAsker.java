@@ -30,7 +30,7 @@ public class ConcreteAsker<T> implements Asker<T> {
     protected ConcreteAsker() {
     }
 
-    public @NotNull T ask() throws InputMismatchException {
+    public @NotNull T get() throws InputMismatchException {
         System.out.println(query);
         System.out.print(inputPrompt);
         return transformer.apply(scanner.nextLine());

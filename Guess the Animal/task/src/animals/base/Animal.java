@@ -1,6 +1,6 @@
 package animals.base;
 
-import lombok.NonNull;
+import animals.linguistics.NounPhrase;
 import org.jetbrains.annotations.NotNull;
 
 public class Animal {

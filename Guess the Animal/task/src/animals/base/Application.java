@@ -7,7 +7,6 @@ import animals.input.AskerBuilder;
 
 import java.util.InputMismatchException;
 import java.util.List;
-import java.util.Random;
 
 public class Application implements Runnable {
 
@@ -52,10 +51,10 @@ public class Application implements Runnable {
         greeter.hello();
         System.out.println();
 
-        Animal animal = animalAsker.ask();
+        Animal animal = animalAsker.get();
 
         yesNoAsker.setQuery("Is it %s?".formatted(animal));
-        if (yesNoAsker.ask()) {
+        if (yesNoAsker.get()) {
             System.out.println("You answered: Yes");
         } else {
             System.out.println("You answered: No");

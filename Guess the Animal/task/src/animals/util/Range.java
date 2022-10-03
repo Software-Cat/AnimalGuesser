@@ -1,8 +1,9 @@
 package animals.util;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class Range<T extends Number> {
+public class Range<T extends Comparable<T>> {
 
     @NotNull
     private final T boundOne;
@@ -15,6 +16,8 @@ public class Range<T extends Number> {
     private final boolean upperInclusive;
 
     public Range(@NotNull T boundOne, @NotNull T boundTwo, boolean lowerInclusive, boolean upperInclusive) {
+        assert boundOne.compareTo(boundTwo) != 0;
+
         this.boundOne = boundOne;
         this.boundTwo = boundTwo;
         this.lowerInclusive = lowerInclusive;
@@ -26,7 +29,7 @@ public class Range<T extends Number> {
     }
 
     public T getLowerBound() {
-        if (boundOneDouble() < boundTwoDouble()) {
+        if (boundOne.compareTo(boundTwo) < 0) {
             return boundOne;
         } else {
             return boundTwo;
@@ -34,43 +37,24 @@ public class Range<T extends Number> {
     }
 
     public T getUpperBound() {
-        if (boundOneDouble() > boundTwoDouble()) {
+        if (boundOne.compareTo(boundTwo) > 0) {
             return boundOne;
         } else {
             return boundTwo;
         }
     }
 
-    public <U extends Number> boolean isInRange(@Nullable final U number) {
-        if (number == null) {
+    public <U extends T> boolean isInRange(@Nullable final U value) {
+        if (value == null) {
             return false;
         }
 
-        double doubleValue = number.doubleValue();
+        int compareLower = getLowerBound().compareTo(value);
+        int compareUpper = getUpperBound().compareTo(value);
 
-        boolean satisfyLower = false;
-        boolean satisfyUpper = false;
-
-        if (lowerInclusive) {
-            satisfyLower = doubleValue >= getLowerBound().doubleValue();
-        } else {
-            satisfyLower = doubleValue > getLowerBound().doubleValue();
-        }
-
-        if (upperInclusive) {
-            satisfyUpper = doubleValue <= getUpperBound().doubleValue();
-        } else {
-            satisfyUpper = doubleValue < getUpperBound().doubleValue();
-        }
+        boolean satisfyLower = lowerInclusive ? compareLower >= 0 : compareLower > 0;
+        boolean satisfyUpper = upperInclusive ? compareUpper <= 0 : compareUpper < 0;
 
         return satisfyLower && satisfyUpper;
-    }
-
-    private double boundOneDouble() {
-        return boundOne.doubleValue();
-    }
-
-    private double boundTwoDouble() {
-        return boundTwo.doubleValue();
     }
 }
