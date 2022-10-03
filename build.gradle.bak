@@ -42,7 +42,6 @@ subprojects {
 
         // JetBrains Annotations
         implementation 'org.jetbrains:annotations:23.0.0'
-
     }
 
     configurations.all {
