@@ -1,14 +1,16 @@
 package animal.base;
 
-import animal.linguistics.partofspeech.Noun;
+import animal.linguistics.phrase.NounPhrase;
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 public class Animal {
 
     @NotNull
-    private final Noun species;
+    @Getter
+    private final NounPhrase species;
 
-    public Animal(@NotNull Noun species) {
+    public Animal(@NotNull NounPhrase species) {
         this.species = species;
     }
 

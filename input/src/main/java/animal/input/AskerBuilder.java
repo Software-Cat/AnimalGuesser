@@ -1,19 +1,20 @@
 package animal.input;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public final class AskerBuilder<T> {
+public final class AskerBuilder<T, U> {
+
+    @NotNull
+    private Function<@Nullable U, @NotNull String> queryContextTransformer = (U ignored) -> "Enter the response:";
 
     @NotNull
     private String inputPrompt = "> ";
-
-    @NotNull
-    private String query = "";
 
     private Function<@NotNull String, @NotNull T> transformer;
 
@@ -24,18 +25,18 @@ public final class AskerBuilder<T> {
     private AskerBuilder() {
     }
 
-    public static AskerBuilder<String> asker() {
-        AskerBuilder<String> builder = new AskerBuilder<>();
+    public static <V> AskerBuilder<String, V> asker(Class<V> contextClass) {
+        AskerBuilder<String, V> builder = new AskerBuilder<>();
         return builder.withTransformer(Function.identity());
     }
 
-    public AskerBuilder<T> withInputPrompt(String inputPrompt) {
+    public AskerBuilder<T, U> withInputPrompt(String inputPrompt) {
         this.inputPrompt = inputPrompt;
         return this;
     }
 
-    public AskerBuilder<T> withQuery(String query) {
-        this.query = query;
+    public AskerBuilder<T, U> withQueryContextTransformer(Function<@Nullable U, @NotNull String> contextToQuery) {
+        this.queryContextTransformer = contextToQuery;
         return this;
     }
 
@@ -46,9 +47,12 @@ public final class AskerBuilder<T> {
      * @param <R>         the type returned by the new transformer
      * @return builder
      */
-    public <R> AskerBuilder<R> addTransformer(Function<T, R> transformer) {
+    public <R> AskerBuilder<R, U> addTransformer(@NotNull Function<@NotNull T, @NotNull R> transformer) {
         Function<String, R> newTransformer = this.transformer.andThen(transformer);
-        return new AskerBuilder<R>().withQuery(query).withInputPrompt(inputPrompt).withTransformer(newTransformer);
+        return new AskerBuilder<R, U>()
+                .withQueryContextTransformer(queryContextTransformer)
+                .withInputPrompt(inputPrompt)
+                .withTransformer(newTransformer);
     }
 
     /**
@@ -57,7 +61,7 @@ public final class AskerBuilder<T> {
      * @param predicate the new predicate
      * @return builder
      */
-    public AskerBuilder<T> addPredicate(Predicate<T> predicate) {
+    public AskerBuilder<T, U> addPredicate(Predicate<T> predicate) {
         return addTransformer((T t) -> {
             if (!predicate.test(t)) {
                 throw new InputMismatchException("The input (\"%s\") does not satisfy the predicate (%s).".formatted(t, predicate));
@@ -66,12 +70,12 @@ public final class AskerBuilder<T> {
         });
     }
 
-    public AskerBuilder<T> persistent(boolean persistent) {
+    public AskerBuilder<T, U> persistent(boolean persistent) {
         this.persistent = persistent;
         return this;
     }
 
-    public AskerBuilder<T> withRetryPhrases(List<String> retryPhrases) {
+    public AskerBuilder<T, U> withRetryPhrases(List<String> retryPhrases) {
         this.retryPhrases = retryPhrases;
         return this;
     }
@@ -82,23 +86,23 @@ public final class AskerBuilder<T> {
      * @param transformer the new transformer
      * @return builder
      */
-    private AskerBuilder<T> withTransformer(Function<String, T> transformer) {
+    private AskerBuilder<T, U> withTransformer(Function<String, T> transformer) {
         this.transformer = transformer;
         return this;
     }
 
-    public Asker<T> build() {
-        Asker<T> asker;
+    public Asker<T, U> build() {
+        Asker<T, U> asker;
 
         if (persistent) {
-            PersistentAsker<T> persistentAsker = new PersistentAsker<>();
+            PersistentAsker<T, U> persistentAsker = new PersistentAsker<>();
             persistentAsker.setRetryPhrases(retryPhrases);
             asker = persistentAsker;
         } else {
             asker = new ConcreteAsker<>();
         }
 
-        asker.setQuery(query);
+        asker.setQueryContextTransformer(queryContextTransformer);
         asker.setInputPrompt(inputPrompt);
         asker.setTransformer(transformer);
 

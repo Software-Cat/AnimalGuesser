@@ -7,16 +7,18 @@ import animal.linguistics.clause.Statement;
 import animal.linguistics.phrase.NounPhrase;
 import animal.utils.greet.Greeter;
 import animal.utils.greet.TimedGreeter;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.InputMismatchException;
 import java.util.List;
+import java.util.Objects;
 
 public class Application implements Runnable {
 
     private final Greeter greeter = new TimedGreeter();
 
-    private final Asker<Animal> animalAsker = AskerBuilder.asker()
-            .withQuery("Enter an animal:")
+    private final Asker<Animal, String> animalAsker = AskerBuilder.asker(String.class)
+            .withQueryContextTransformer("Enter the %s animal"::formatted)
             .addTransformer(String::trim)
             .addPredicate((String s) -> !s.isBlank())
             .addTransformer(NounPhrase::parsePhrase)
@@ -24,8 +26,8 @@ public class Application implements Runnable {
             .persistent(true)
             .build();
 
-    private final Asker<Boolean> yesNoAsker = AskerBuilder.asker()
-            .withQuery("Is it a ...?")
+    private final Asker<Boolean, Animal> yesNoAsker = AskerBuilder.asker(Animal.class)
+            .withQueryContextTransformer("Is it correct for %s?"::formatted)
             .addTransformer(String::trim)
             .addPredicate((String s) -> !s.isBlank())
             .addTransformer((String s) -> {
@@ -51,11 +53,15 @@ public class Application implements Runnable {
                     "Oh, no, don't try to confuse me: say yes or no."))
             .build();
 
-    private final Asker<Statement> statementAsker = AskerBuilder.asker()
-            .withQuery("Specify a fact that distinguishes a ... from a ...")
+    private final Asker<Statement, Pair<Animal, Animal>> statementAsker = AskerBuilder.asker((Class<Pair<Animal, Animal>>) (Class<?>) Pair.class)
+            .withQueryContextTransformer((Pair<Animal, Animal> animals) -> """
+                    Specify a fact that distinguishes %s from %s.
+                    The sentence should be of the format: 'It can/has/is ...'.
+                    """.formatted(animals.getLeft(), animals.getRight()))
             .addTransformer(String::trim)
             .addPredicate((String s) -> !s.isBlank())
             .addTransformer(Statement::parseStatement)
+            .addPredicate(Objects::nonNull)
             .persistent(true)
             .withRetryPhrases(List.of(
                     """
@@ -70,22 +76,40 @@ public class Application implements Runnable {
 
     @Override
     public void run() {
+        // Greeting
         greeter.hello();
         System.out.println();
 
-        animalAsker.setQuery("Enter the first animal:");
+        // Ask animals
+        animalAsker.setContext("first");
         Animal animal1 = animalAsker.get();
-        animalAsker.setQuery("Enter the second animal:");
+        animalAsker.setContext("second");
         Animal animal2 = animalAsker.get();
 
-        statementAsker.setQuery("""
-                Specify a fact that distinguishes %s from %s.
-                The sentence should be of the format: 'It can/has/is ...'.
-                """.formatted(animal1, animal2));
+        // Ask statement
+        statementAsker.setContext(Pair.of(animal1, animal2));
         Statement statement = statementAsker.get();
-        System.out.println(statement);
-        System.out.println(statement.toQuestion());
+        yesNoAsker.setContext(animal2);
+        boolean trueForTwo = yesNoAsker.get();
 
+        // Statistics
+        System.out.println("I learned the following facts about animals:");
+        if (trueForTwo) {
+            System.out.println(" - " + statement.withSubject(
+                    animal1.getSpecies().withArticle(true)).negative());
+            System.out.println(" - " + statement.withSubject(
+                    animal2.getSpecies().withArticle(true)));
+        } else {
+            System.out.println(" - " + statement.withSubject(
+                    animal1.getSpecies().withArticle(true)));
+            System.out.println(" - " + statement.withSubject(
+                    animal2.getSpecies().withArticle(true)).negative());
+        }
+
+        System.out.println("I can distinguish these animals by asking the question:");
+        System.out.println(" - " + statement.negative().toQuestion());
+
+        // Goodbye
         System.out.println();
         greeter.goodbye();
     }

@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Random;
 
-public class PersistentAsker<T> extends ConcreteAsker<T> {
+public class PersistentAsker<T, U> extends ConcreteAsker<T, U> {
 
     private final Random random = new Random();
 

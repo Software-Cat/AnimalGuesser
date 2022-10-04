@@ -2,24 +2,15 @@ package animal.linguistics.clause;
 
 import animal.linguistics.partofspeech.Noun;
 import animal.linguistics.partofspeech.Verb;
+import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-public class Question implements Clause {
+@EqualsAndHashCode(callSuper = true)
+public class Question extends MainClause {
 
-    @NotNull
-    private final Noun subject;
-
-    @NotNull
-    private final Verb verb;
-
-    @NotNull
-    private final String object;
-
-    protected Question(@NotNull Noun subject, @NotNull Verb verbPhrase, @NotNull String object) {
-        this.subject = subject;
-        this.verb = verbPhrase;
-        this.object = object;
+    protected Question(@NotNull Noun subject, @NotNull Verb verb, @NotNull String object) {
+        super(subject, verb, object);
     }
 
     @Override
@@ -29,7 +20,15 @@ public class Question implements Clause {
                 subject.toString(),
                 object);
         sentence = StringUtils.capitalize(sentence);
-        sentence = sentence + "?";
-        return sentence;
+        return sentence + "?";
+    }
+
+    @Override
+    public Question withSubject(Noun newSubject) {
+        return new Question(newSubject, verb, object);
+    }
+
+    public @NotNull Statement toStatement() {
+        return new Statement(subject, verb, object);
     }
 }
