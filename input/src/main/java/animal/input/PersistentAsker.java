@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Random;
 
@@ -21,7 +20,7 @@ public class PersistentAsker<T> extends ConcreteAsker<T> {
     }
 
     @Override
-    public @NotNull T get() throws InputMismatchException {
+    public @NotNull T get() {
         System.out.println(getQuery());
 
         T response = null;
@@ -34,7 +33,7 @@ public class PersistentAsker<T> extends ConcreteAsker<T> {
 
                 // This line won't be reached if the super.ask() throws an exception.
                 responseIsValid = true;
-            } catch (InputMismatchException e) {
+            } catch (Exception e) {
                 System.out.println(retryPhrases.get(random.nextInt(retryPhrases.size())));
             }
         }

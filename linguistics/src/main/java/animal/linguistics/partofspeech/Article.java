@@ -1,4 +1,4 @@
-package animal.linguistics;
+package animal.linguistics.partofspeech;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -8,13 +8,13 @@ public enum Article {
     AN(false),
     THE(true);
 
-    private final boolean definite;
+    private final boolean DEFINITE;
 
     Article(boolean definite) {
-        this.definite = definite;
+        this.DEFINITE = definite;
     }
 
-    public static Article defaultArticle(@NotNull String noun) {
+    public static Article defaultIndefiniteArticle(@NotNull String noun) {
         if (noun.matches("(?i)[aeiou].*")) {
             return AN;
         } else {
@@ -26,7 +26,7 @@ public enum Article {
         return word.matches("(?i)(a|an|the)");
     }
 
-    public static @Nullable Article toArticle(@Nullable String word) {
+    public static @Nullable Article parseArticle(@Nullable String word) {
         if (word == null || !isArticle(word)) {
             return null;
         }
@@ -41,7 +41,7 @@ public enum Article {
     }
 
     public boolean isDefinite() {
-        return definite;
+        return DEFINITE;
     }
 
     @Override

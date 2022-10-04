@@ -1,4 +1,4 @@
-package animal.linguistics.greet;
+package animal.utils.greet;
 
 public interface Greeter {
 

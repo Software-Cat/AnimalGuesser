@@ -11,6 +11,8 @@
         <module name="AnimalGuesser.app.test" />
         <module name="AnimalGuesser.linguistics.test" />
         <module name="AnimalGuesser.input.main" />
+        <module name="AnimalGuesser.base.test" />
+        <module name="AnimalGuesser.base.main" />
         <module name="AnimalGuesser.linguistics.main" />
         <module name="AnimalGuesser.utils.main" />
         <module name="AnimalGuesser.app.main" />

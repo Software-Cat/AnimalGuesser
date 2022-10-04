@@ -1,6 +1,6 @@
-package animal.linguistics.greet;
+package animal.utils.greet;
 
-import animal.util.Range;
+import animal.utils.Range;
 
 import java.time.LocalTime;
 import java.util.List;

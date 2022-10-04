@@ -1,9 +1,12 @@
 package animal.app;
 
+import animal.base.Animal;
 import animal.input.Asker;
 import animal.input.AskerBuilder;
-import animal.linguistics.greet.Greeter;
-import animal.linguistics.greet.TimedGreeter;
+import animal.linguistics.clause.Statement;
+import animal.linguistics.phrase.NounPhrase;
+import animal.utils.greet.Greeter;
+import animal.utils.greet.TimedGreeter;
 
 import java.util.InputMismatchException;
 import java.util.List;
@@ -16,7 +19,9 @@ public class Application implements Runnable {
             .withQuery("Enter an animal:")
             .addTransformer(String::trim)
             .addPredicate((String s) -> !s.isBlank())
+            .addTransformer(NounPhrase::parsePhrase)
             .addTransformer(Animal::new)
+            .persistent(true)
             .build();
 
     private final Asker<Boolean> yesNoAsker = AskerBuilder.asker()
@@ -46,19 +51,40 @@ public class Application implements Runnable {
                     "Oh, no, don't try to confuse me: say yes or no."))
             .build();
 
+    private final Asker<Statement> statementAsker = AskerBuilder.asker()
+            .withQuery("Specify a fact that distinguishes a ... from a ...")
+            .addTransformer(String::trim)
+            .addPredicate((String s) -> !s.isBlank())
+            .addTransformer(Statement::parseStatement)
+            .persistent(true)
+            .withRetryPhrases(List.of(
+                    """
+                            The examples of a statement:
+                             - It can fly
+                             - It has horn
+                             - It is a mammal
+                            Specify a fact that distinguishes a cat from a shark.
+                            The sentence should be of the format: 'It can/has/is ...'."""
+            ))
+            .build();
+
     @Override
     public void run() {
         greeter.hello();
         System.out.println();
 
-        Animal animal = animalAsker.get();
+        animalAsker.setQuery("Enter the first animal:");
+        Animal animal1 = animalAsker.get();
+        animalAsker.setQuery("Enter the second animal:");
+        Animal animal2 = animalAsker.get();
 
-        yesNoAsker.setQuery("Is it %s?".formatted(animal));
-        if (yesNoAsker.get()) {
-            System.out.println("You answered: Yes");
-        } else {
-            System.out.println("You answered: No");
-        }
+        statementAsker.setQuery("""
+                Specify a fact that distinguishes %s from %s.
+                The sentence should be of the format: 'It can/has/is ...'.
+                """.formatted(animal1, animal2));
+        Statement statement = statementAsker.get();
+        System.out.println(statement);
+        System.out.println(statement.toQuestion());
 
         System.out.println();
         greeter.goodbye();
