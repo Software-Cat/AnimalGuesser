@@ -1,7 +1,9 @@
 package animal.input;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -19,5 +21,5 @@ public interface Asker<T, U> extends Supplier<T> {
 
     void setInputPrompt(@NotNull String inputPrompt);
 
-    void setTransformer(@NotNull Function<@NotNull String, @NotNull T> transformer);
+    void setTransformer(@NotNull BiFunction<@NotNull String, @Nullable U, @NotNull T> transformer);
 }

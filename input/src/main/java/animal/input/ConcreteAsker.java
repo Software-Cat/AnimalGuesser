@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Scanner;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class ConcreteAsker<T, U> implements Asker<T, U> {
@@ -14,23 +15,23 @@ public class ConcreteAsker<T, U> implements Asker<T, U> {
 
     @Getter
     @Setter
-    @NotNull
-    private String inputPrompt;
-
-    @Getter
-    @Setter
-    @NotNull
-    private Function<@NotNull String, @NotNull T> transformer;
-
-    @Getter
-    @Setter
     @Nullable
-    private U context;
+    protected U context;
+
+    @Getter
+    @Setter
+    @NotNull
+    protected BiFunction<@NotNull String, @Nullable U, @NotNull T> transformer;
 
     @Getter
     @Setter
     @NotNull
     private Function<@Nullable U, @NotNull String> queryContextTransformer;
+
+    @Getter
+    @Setter
+    @NotNull
+    private String inputPrompt;
 
     protected ConcreteAsker() {
     }
@@ -38,7 +39,7 @@ public class ConcreteAsker<T, U> implements Asker<T, U> {
     public @NotNull T get() {
         System.out.println(getQuery());
         System.out.print(inputPrompt);
-        return transformer.apply(scanner.nextLine());
+        return transformer.apply(scanner.nextLine(), context);
     }
 
     @Override
