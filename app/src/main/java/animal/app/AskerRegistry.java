@@ -17,8 +17,19 @@ import java.util.function.Supplier;
 
 public abstract class AskerRegistry {
 
+    /**
+     * Accepts arbitrary user input, returns once user presses enter.
+     */
+    public static final Asker<String, String> confirmationAsker = AskerBuilder.builder(String.class)
+            .queryContextTransformer((String s) -> s)
+            .addTransformer((String s) -> "")
+            .build();
+
+    /**
+     * Asks for an animal.
+     */
     public static final Asker<Animal, String> animalAsker = AskerBuilder.builder(String.class)
-            .queryContextTransformer("Enter the %s animal"::formatted)
+            .queryContextTransformer((String s) -> s)
             .addTransformer(String::trim)
             .addPredicate((String s) -> !s.isBlank())
             .addTransformer(NounPhrase::parsePhrase)
@@ -26,6 +37,9 @@ public abstract class AskerRegistry {
             .persistent(true)
             .build();
 
+    /**
+     * Asks for a statement describing an animal.
+     */
     public static final Asker<Statement, Pair<Animal, Animal>> statementAsker = AskerBuilder.builder((Class<Pair<Animal, Animal>>) (Class<?>) Pair.class)
             .queryContextTransformer((Pair<Animal, Animal> animals) -> """
                     Specify a fact that distinguishes %s from %s.
@@ -87,7 +101,10 @@ public abstract class AskerRegistry {
         }
     };
 
-    public static final Asker<Boolean, Animal> animalYNAsker = AskerBuilder.builder(Animal.class)
+    /**
+     * Asks whether a statement is correct for an animal.
+     */
+    public static final Asker<Boolean, Animal> statementTruthfulnessAsker = AskerBuilder.builder(Animal.class)
             .queryContextTransformer("Is it correct for %s?"::formatted)
             .addTransformer(String::trim)
             .addPredicate((String s) -> !s.isBlank())
@@ -96,6 +113,9 @@ public abstract class AskerRegistry {
             .retryPhraseSupplier(retryPhraseSupplier)
             .build();
 
+    /**
+     * Converts statement about animal to question form and asks it as a yes-no question.
+     */
     public static final Asker<Boolean, Statement> statementYNAsker = AskerBuilder.builder(Statement.class)
             .queryContextTransformer((Statement s) -> s.toQuestion().toString())
             .addTransformer(String::trim)
