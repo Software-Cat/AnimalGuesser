@@ -9,6 +9,7 @@ import java.util.Random;
 public class TimedGreeter implements Greeter {
 
     private final Range<Integer> MORNING = new Range<>(5, 12);
+    
     private final Range<Integer> AFTERNOON = new Range<>(12, 18);
 
     private final Random random = new Random();

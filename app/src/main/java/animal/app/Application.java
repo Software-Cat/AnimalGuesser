@@ -1,6 +1,7 @@
 package animal.app;
 
 import animal.base.Animal;
+import animal.base.DecisionTree;
 import animal.linguistics.clause.Statement;
 import animal.utils.greet.Greeter;
 import animal.utils.greet.TimedGreeter;
@@ -11,7 +12,7 @@ import static animal.app.AskerRegistry.*;
 public class Application implements Runnable {
 
     private final Greeter greeter = new TimedGreeter();
-    
+
     @Override
     public void run() {
         // Greeting
@@ -46,6 +47,23 @@ public class Application implements Runnable {
 
         System.out.println("I can distinguish these animals by asking the question:");
         System.out.println(" - " + statement.toQuestion());
+
+        // Tree generation
+        DecisionTree<Animal> tree = new DecisionTree<>();
+        DecisionTree<Animal>.LeafNode animal1Node = tree.addYes(null, null, animal1);
+        if (trueForTwo) {
+            tree.addYes(animal1Node, statement, animal2);
+        } else {
+            tree.addNo(animal1Node, statement, animal2);
+        }
+
+        // Tree traversal
+        DecisionTree<Animal>.LeafNode result = tree.traverseWith((DecisionTree<Animal>.BranchNode node) -> {
+            branchChooser.setContext(node);
+            return branchChooser.get();
+        });
+
+        System.out.println(result.tryGetValue().get());
 
         // Goodbye
         System.out.println();

@@ -2,7 +2,6 @@ package animal.app;
 
 import animal.base.Animal;
 import animal.base.DecisionTree;
-import animal.base.Node;
 import animal.input.Asker;
 import animal.input.AskerBuilder;
 import animal.linguistics.clause.Statement;
@@ -48,15 +47,6 @@ public abstract class AskerRegistry {
             )
             .build();
 
-    public static final Asker<Node<Animal>, DecisionTree<Animal>.BranchNode> branchChooser = AskerBuilder.builder((Class<DecisionTree<Animal>.BranchNode>) (Class) DecisionTree.class)
-            .addTransformer(String::strip)
-            .addPredicate((String s) -> !s.isBlank())
-            .addTransformer((String s, DecisionTree<Animal>.BranchNode current) -> {
-                statementAsker.get();
-                return current.getYesBranch();
-            })
-            .build();
-
     private static final Function<String, Boolean> yesNoProcessor = (String s) -> {
         s = s.toLowerCase();
         s = s.replaceFirst("\\p{Punct}", "");
@@ -72,6 +62,13 @@ public abstract class AskerRegistry {
         throw new InputMismatchException(
                 "The input (\"%s\") cannot be converted to a valid boolean response.".formatted(s));
     };
+
+    public static final Asker<Boolean, DecisionTree<Animal>.BranchNode> branchChooser = AskerBuilder.builder((Class<DecisionTree<Animal>.BranchNode>) (Class) DecisionTree.class)
+            .queryContextTransformer((DecisionTree<Animal>.BranchNode node) -> node.getStatement().toQuestion().toString())
+            .addTransformer(String::strip)
+            .addPredicate((String s) -> !s.isBlank())
+            .addTransformer(yesNoProcessor)
+            .build();
 
     private static final Supplier<String> retryPhraseSupplier = new Supplier<>() {
 
