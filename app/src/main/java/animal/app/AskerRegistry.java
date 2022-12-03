@@ -94,8 +94,8 @@ public abstract class AskerRegistry {
         }
     };
 
-    public static final Asker<Boolean, DecisionTree<Animal>.BranchNode> branchChooser = AskerBuilder.builder((Class<DecisionTree<Animal>.BranchNode>) (Class) DecisionTree.class)
-            .queryContextTransformer((DecisionTree<Animal>.BranchNode node) -> node.getStatement().toQuestion().toString())
+    public static final Asker<Boolean, DecisionTree.BranchNode<Animal>> branchChooser = AskerBuilder.builder((Class<DecisionTree.BranchNode<Animal>>) (Class) DecisionTree.class)
+            .queryContextTransformer((DecisionTree.BranchNode<Animal> node) -> node.getStatement().toQuestion().toString())
             .addTransformer(String::strip)
             .addPredicate((String s) -> !s.isBlank())
             .addTransformer(yesNoProcessor)

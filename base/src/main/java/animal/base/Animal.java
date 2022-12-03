@@ -10,6 +10,13 @@ public class Animal {
     @Getter
     private final NounPhrase species;
 
+    /**
+     * This constructor should only be used by Jackson
+     */
+    public Animal() {
+        species = null;
+    }
+
     public Animal(@NotNull NounPhrase species) {
         this.species = species;
     }

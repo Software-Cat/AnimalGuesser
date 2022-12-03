@@ -12,8 +12,8 @@ class DecisionTreeTest {
 
     DecisionTree<Animal> tree;
 
-    DecisionTree<Animal>.LeafNode dogNode;
-    DecisionTree<Animal>.LeafNode catNode;
+    DecisionTree.LeafNode<Animal> dogNode;
+    DecisionTree.LeafNode<Animal> catNode;
 
     @BeforeEach
     void setUp() {

@@ -1,6 +1,9 @@
 package animal.base;
 
 import animal.linguistics.clause.Statement;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -8,6 +11,8 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -23,20 +28,20 @@ public class DecisionTree<T> implements Iterable<Node<T>> {
         this.root = null;
     }
 
-    private LeafNode addYesRecursive(Node<T> current, @NotNull LeafNode target, @NotNull Statement statement, @NotNull T value) {
+    private LeafNode<T> addYesRecursive(Node<T> current, @NotNull LeafNode<T> target, @NotNull Statement statement, @NotNull T value) {
         if (current.isLeaf()) {
             return null;
         }
 
-        LeafNode newLeaf = new LeafNode(value);
+        LeafNode<T> newLeaf = new LeafNode<>(value);
         if (current.getYesBranch() == target) {
-            current.setYesBranch(new BranchNode(
+            current.setYesBranch(new BranchNode<>(
                     statement,
                     current.getYesBranch(),
                     newLeaf));
             return newLeaf;
         } else if (current.getNoBranch() == target) {
-            current.setNoBranch(new BranchNode(
+            current.setNoBranch(new BranchNode<>(
                     statement,
                     current.getNoBranch(),
                     newLeaf));
@@ -44,7 +49,7 @@ public class DecisionTree<T> implements Iterable<Node<T>> {
         }
 
         if (current.getYesBranch() != null) {
-            LeafNode fromYes = addYesRecursive(current.getYesBranch(), target, statement, value);
+            LeafNode<T> fromYes = addYesRecursive(current.getYesBranch(), target, statement, value);
             if (fromYes != null) {
                 return fromYes;
             }
@@ -65,13 +70,13 @@ public class DecisionTree<T> implements Iterable<Node<T>> {
      * @param value     the actual value of the new leaf
      * @return the newly created leaf
      */
-    public LeafNode addYes(LeafNode target, Statement statement, @NotNull T value) {
-        LeafNode newLeaf = new LeafNode(value);
+    public LeafNode<T> addYes(LeafNode<T> target, Statement statement, @NotNull T value) {
+        LeafNode<T> newLeaf = new LeafNode<>(value);
         if (root == null) {
             root = newLeaf;
             return newLeaf;
         } else if (root.isLeaf()) {
-            root = new BranchNode(
+            root = new BranchNode<>(
                     statement,
                     root,
                     newLeaf
@@ -82,16 +87,16 @@ public class DecisionTree<T> implements Iterable<Node<T>> {
         return addYesRecursive(root, target, statement, value);
     }
 
-    private LeafNode addNoRecursive(Node<T> current, @NotNull LeafNode target, @NotNull Statement statement, @NotNull T value) {
-        LeafNode newLeaf = new LeafNode(value);
+    private LeafNode<T> addNoRecursive(Node<T> current, @NotNull LeafNode<T> target, @NotNull Statement statement, @NotNull T value) {
+        LeafNode<T> newLeaf = new LeafNode<>(value);
         if (current.getYesBranch() == target) {
-            current.setYesBranch(new BranchNode(
+            current.setYesBranch(new BranchNode<>(
                     statement,
                     newLeaf,
                     current.getYesBranch()));
             return newLeaf;
         } else if (current.getNoBranch() == target) {
-            current.setNoBranch(new BranchNode(
+            current.setNoBranch(new BranchNode<>(
                     statement,
                     newLeaf,
                     current.getNoBranch()));
@@ -99,7 +104,7 @@ public class DecisionTree<T> implements Iterable<Node<T>> {
         }
 
         if (current.getYesBranch() != null) {
-            LeafNode fromYes = addYesRecursive(current.getYesBranch(), target, statement, value);
+            LeafNode<T> fromYes = addYesRecursive(current.getYesBranch(), target, statement, value);
             if (fromYes != null) {
                 return fromYes;
             }
@@ -120,13 +125,13 @@ public class DecisionTree<T> implements Iterable<Node<T>> {
      * @param value     the actual value of the new leaf
      * @return the newly created leaf
      */
-    public LeafNode addNo(LeafNode target, Statement statement, @NotNull T value) {
-        LeafNode newLeaf = new LeafNode(value);
+    public LeafNode<T> addNo(LeafNode<T> target, Statement statement, @NotNull T value) {
+        LeafNode<T> newLeaf = new LeafNode<>(value);
         if (root == null) {
             root = newLeaf;
             return newLeaf;
         } else if (root.isLeaf()) {
-            root = new BranchNode(
+            root = new BranchNode<>(
                     statement,
                     newLeaf,
                     root
@@ -143,7 +148,7 @@ public class DecisionTree<T> implements Iterable<Node<T>> {
         return new InOrderIterator<>(this);
     }
 
-    public LeafNode traverseWith(Function<BranchNode, Boolean> branchChooser) {
+    public LeafNode<T> traverseWith(Function<BranchNode<T>, Boolean> branchChooser) {
         if (root == null) {
             return null;
         } else if (root.isLeaf()) {
@@ -169,9 +174,7 @@ public class DecisionTree<T> implements Iterable<Node<T>> {
         Multimap<Statement, T> map = ArrayListMultimap.create();
         allKnowledgeRecursive(root, map);
 
-        Multimap<T, Statement> inverse = Multimaps.invertFrom(map, ArrayListMultimap.create());
-
-        return inverse;
+        return Multimaps.invertFrom(map, ArrayListMultimap.create());
     }
 
     private List<Node<T>> allKnowledgeRecursive(Node<T> current, Multimap<Statement, T> map) {
@@ -186,7 +189,7 @@ public class DecisionTree<T> implements Iterable<Node<T>> {
             List<Node<T>> leavesOfNo = allKnowledgeRecursive(current.getNoBranch(), map);
 
             // Add current decision to map
-            DecisionTree<T>.BranchNode currentBranch = current.tryGetAsBranch().get();
+            DecisionTree.BranchNode<T> currentBranch = current.tryGetAsBranch().get();
             map.putAll(currentBranch.statement, leavesOfYes.stream()
                     .map((Node<T> n) -> n.tryGetValue().get())
                     .collect(Collectors.toList()));
@@ -243,64 +246,118 @@ public class DecisionTree<T> implements Iterable<Node<T>> {
         return null;
     }
 
-    public class BranchNode extends Node<T> {
+    public Serializer serializer() {
+        return new Serializer();
+    }
+
+    public static class BranchNode<U> extends Node<U> {
 
         @Getter
         @NotNull
         private final Statement statement;
 
-        public BranchNode(@NotNull Statement statement, @NotNull Node<T> noBranch, @NotNull Node<T> yesBranch) {
+        /**
+         * This constructor should only be used by Jackson
+         */
+        public BranchNode() {
+            super(null);
+            statement = null;
+        }
+
+        public BranchNode(@NotNull Statement statement, @NotNull Node<U> noBranch, @NotNull Node<U> yesBranch) {
             super(null);
             this.statement = statement;
             setNoBranch(noBranch);
             setYesBranch(yesBranch);
+            System.out.println(getClass().toString());
         }
 
         @Override
-        public void setNoBranch(Node<T> noBranch) {
+        public void setNoBranch(Node<U> noBranch) {
             super.setNoBranch(noBranch);
         }
 
         @Override
-        public void setYesBranch(Node<T> yesBranch) {
+        public void setYesBranch(Node<U> yesBranch) {
             super.setYesBranch(yesBranch);
         }
 
         @Override
-        public Optional<BranchNode> tryGetAsBranch() {
+        public Optional<BranchNode<U>> tryGetAsBranch() {
             return Optional.of(this);
         }
 
         @Override
-        public Optional<LeafNode> tryGetAsLeaf() {
+        public Optional<LeafNode<U>> tryGetAsLeaf() {
             return Optional.empty();
         }
     }
 
-    public class LeafNode extends Node<T> {
+    public static class LeafNode<U> extends Node<U> {
 
-        public LeafNode(@NotNull T value) {
+        /**
+         * This constructor should only be used by Jackson
+         */
+        public LeafNode() {
+            super(null);
+        }
+
+        public LeafNode(@NotNull U value) {
             super(value);
         }
 
         @Override
-        public Optional<BranchNode> tryGetAsBranch() {
+        public Optional<BranchNode<U>> tryGetAsBranch() {
             return Optional.empty();
         }
 
         @Override
-        public Optional<LeafNode> tryGetAsLeaf() {
+        public Optional<LeafNode<U>> tryGetAsLeaf() {
             return Optional.of(this);
         }
 
         @Override
-        public void setNoBranch(Node<T> noBranch) {
+        public void setNoBranch(Node<U> noBranch) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public void setYesBranch(Node<T> yesBranch) {
+        public void setYesBranch(Node<U> yesBranch) {
             throw new UnsupportedOperationException();
+        }
+    }
+
+    public class Serializer {
+
+        private static final ObjectMapper mapper = new JsonMapper();
+
+        static {
+            mapper.registerSubtypes(Animal.class);
+        }
+
+        public String fileName = "./data/animals.json";
+
+        public void write() throws IOException {
+            writeTo(new File(fileName));
+        }
+
+        public void read() throws IOException {
+            readFrom(new File(fileName));
+        }
+
+        public boolean fileExists() {
+            return new File(fileName).exists();
+        }
+
+        public void writeTo(File file) throws IOException {
+            mapper
+                    .writerWithDefaultPrettyPrinter()
+                    .writeValue(file, root);
+        }
+
+        public void readFrom(File file) throws IOException {
+            root = mapper.readValue(file, new TypeReference<>() {
+            });
         }
     }
 }

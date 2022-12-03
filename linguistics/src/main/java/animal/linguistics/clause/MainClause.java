@@ -3,6 +3,7 @@ package animal.linguistics.clause;
 import animal.linguistics.partofspeech.Noun;
 import animal.linguistics.partofspeech.Verb;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -10,13 +11,16 @@ import org.jetbrains.annotations.NotNull;
 public abstract class MainClause implements Clause {
 
     @NotNull
+    @Getter
     protected final Noun subject;
 
     @NotNull
+    @Getter
     protected final Verb verb;
 
     // TODO: Find better implementation of object
     @NotNull
+    @Getter
     protected final String object;
 
     protected MainClause(@NotNull Noun subject, @NotNull Verb verb, @NotNull String object) {

@@ -4,6 +4,8 @@ import animal.linguistics.partofspeech.Article;
 import animal.linguistics.prop.Gender;
 import animal.linguistics.prop.Number;
 import animal.linguistics.prop.Person;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -11,10 +13,20 @@ import java.util.List;
 public class NounPhrase implements animal.linguistics.partofspeech.Noun {
 
     @NotNull
+    @Getter
     private final String noun;
 
     @NotNull
+    @Getter
     private final Article article;
+
+    /**
+     * This constructor should only be used by Jackson
+     */
+    public NounPhrase() {
+        noun = null;
+        article = null;
+    }
 
     protected NounPhrase(@NotNull String noun, @NotNull Article article) {
         this.noun = noun;
@@ -80,17 +92,20 @@ public class NounPhrase implements animal.linguistics.partofspeech.Noun {
         return String.join(" ", article.toString(), noun);
     }
 
+    @JsonIgnore
     @Override
     public Person getPerson() {
         return Person.THIRD;
     }
 
     @Override
+    @JsonIgnore
     public Number getNumber() {
         return Number.SINGULAR;
     }
 
     @Override
+    @JsonIgnore
     public Gender getGender() {
         return Gender.NEUTRAL;
     }

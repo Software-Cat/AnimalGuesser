@@ -13,6 +13,13 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class Statement extends MainClause {
 
+    /**
+     * This constructor should only be used by Jackson
+     */
+    public Statement() {
+        this(null, null, null);
+    }
+
     protected Statement(@NotNull Noun subject, @NotNull Verb verb, @NotNull String object) {
         super(subject, verb, object);
     }

@@ -8,6 +8,7 @@ import animal.utils.greet.Greeter;
 import animal.utils.greet.TimedGreeter;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -22,7 +23,11 @@ public class Application implements Runnable {
 
     @Override
     public void run() {
-        start();
+        if (tree.serializer().fileExists()) {
+            startOldUser();
+        } else {
+            startNewUser();
+        }
 
         boolean running = true;
         replayAsker.setContext("Would you like to play again?");
@@ -38,7 +43,7 @@ public class Application implements Runnable {
         end();
     }
 
-    private void start() {
+    private void startNewUser() {
         // Greeting
         greeter.hello();
         System.out.println();
@@ -58,12 +63,40 @@ public class Application implements Runnable {
         System.out.println();
     }
 
+    private void startOldUser() {
+        // Greeting
+        greeter.hello();
+        System.out.println();
+
+        // Introduce game
+        System.out.println("I know a lot about animals.");
+        System.out.println("Let's play a game!");
+        System.out.println("You think of an animal, and I guess it.");
+        confirmationAsker.setContext("Press enter when you're ready.");
+        confirmationAsker.get();
+        System.out.println();
+
+        // Load data
+        try {
+            tree.serializer().read();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private void end() {
         greeter.goodbye();
+
+        // Serialize tree
+        try {
+            tree.serializer().write();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void guess() {
-        DecisionTree<Animal>.LeafNode result = tree.traverseWith((DecisionTree<Animal>.BranchNode node) -> {
+        DecisionTree.LeafNode<Animal> result = tree.traverseWith((DecisionTree.BranchNode<Animal> node) -> {
             branchChooser.setContext(node);
             return branchChooser.get();
         });
@@ -108,7 +141,7 @@ public class Application implements Runnable {
         System.out.println();
     }
 
-    private void learnNewAnimal(DecisionTree<Animal>.LeafNode wrongGuess) {
+    private void learnNewAnimal(DecisionTree.LeafNode<Animal> wrongGuess) {
         // Get animal actually thought of
         animalAsker.setContext("I give up. What animal do you have in mind?");
         Animal newAnimal = animalAsker.get();
@@ -127,57 +160,5 @@ public class Application implements Runnable {
         } else {
             tree.addNo(wrongGuess, newFact, newAnimal);
         }
-    }
-
-    @Deprecated
-    private void deprecated() {
-        // Ask animals
-        animalAsker.setContext("Enter the first animal:");
-        Animal animal1 = animalAsker.get();
-        animalAsker.setContext("Enter the second animal:");
-        Animal animal2 = animalAsker.get();
-
-        // Ask statement
-        statementAsker.setContext(Pair.of(animal1, animal2));
-        Statement statement = statementAsker.get();
-        statementTruthfulnessAsker.setContext(animal2);
-        boolean trueForTwo = statementTruthfulnessAsker.get();
-
-        // Statistics
-        System.out.println("I learned the following facts about animals:");
-        if (trueForTwo) {
-            System.out.println(" - " + statement.withSubject(
-                    animal1.getSpecies().withArticle(true)).negative());
-            System.out.println(" - " + statement.withSubject(
-                    animal2.getSpecies().withArticle(true)));
-        } else {
-            System.out.println(" - " + statement.withSubject(
-                    animal1.getSpecies().withArticle(true)));
-            System.out.println(" - " + statement.withSubject(
-                    animal2.getSpecies().withArticle(true)).negative());
-        }
-
-        System.out.println("I can distinguish these animals by asking the question:");
-        System.out.println(" - " + statement.toQuestion());
-
-        // Tree generation
-        DecisionTree<Animal>.LeafNode animal1Node = tree.addYes(null, null, animal1);
-        if (trueForTwo) {
-            tree.addYes(animal1Node, statement, animal2);
-        } else {
-            tree.addNo(animal1Node, statement, animal2);
-        }
-
-        // Tree traversal
-        DecisionTree<Animal>.LeafNode result = tree.traverseWith((DecisionTree<Animal>.BranchNode node) -> {
-            branchChooser.setContext(node);
-            return branchChooser.get();
-        });
-
-        System.out.println(result.tryGetValue().get());
-
-        // Goodbye
-        System.out.println();
-        greeter.goodbye();
     }
 }
