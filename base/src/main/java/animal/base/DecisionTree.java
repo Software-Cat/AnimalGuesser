@@ -3,6 +3,7 @@ package animal.base;
 import animal.linguistics.clause.Statement;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -12,6 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class DecisionTree<T> implements Iterable<Node<T>> {
 
@@ -164,20 +166,41 @@ public class DecisionTree<T> implements Iterable<Node<T>> {
     }
 
     public Multimap<T, Statement> allKnowledge() {
-        Multimap<T, Statement> map = ArrayListMultimap.create();
+        Multimap<Statement, T> map = ArrayListMultimap.create();
+        allKnowledgeRecursive(root, map);
 
-        TreeIterator<T> iterator = new InOrderIterator<>(this);
+        Multimap<T, Statement> inverse = Multimaps.invertFrom(map, ArrayListMultimap.create());
 
-        while (iterator.hasNext()) {
-            Node<T> current = iterator.next();
+        return inverse;
+    }
 
-            // If current node is leaf node
-            if (current.isLeaf()) {
+    private List<Node<T>> allKnowledgeRecursive(Node<T> current, Multimap<Statement, T> map) {
+        if (current.isLeaf()) {
+            // If is leaf, return self as list
+            List<Node<T>> list = new ArrayList<>();
+            list.add(current);
+            return list;
+        } else { // If branch
+            // Get leaves from yes and no branch
+            List<Node<T>> leavesOfYes = allKnowledgeRecursive(current.getYesBranch(), map);
+            List<Node<T>> leavesOfNo = allKnowledgeRecursive(current.getNoBranch(), map);
 
-            }
+            // Add current decision to map
+            DecisionTree<T>.BranchNode currentBranch = current.tryGetAsBranch().get();
+            map.putAll(currentBranch.statement, leavesOfYes.stream()
+                    .map((Node<T> n) -> n.tryGetValue().get())
+                    .collect(Collectors.toList()));
+            map.putAll(currentBranch.statement.negative(), leavesOfNo.stream()
+                    .map((Node<T> n) -> n.tryGetValue().get())
+                    .collect(Collectors.toList()));
+
+            // Add leaves of branches as leaves of current
+            List<Node<T>> leavesOfCurrent = new ArrayList<>();
+            leavesOfCurrent.addAll(leavesOfYes);
+            leavesOfCurrent.addAll(leavesOfNo);
+
+            return leavesOfCurrent;
         }
-
-        return null;
     }
 
     /**
@@ -187,34 +210,34 @@ public class DecisionTree<T> implements Iterable<Node<T>> {
      * @return list of true/false decisions
      */
     public List<Boolean> pathTo(Node<T> target) {
-        return pathToRecursive(target, root, new ArrayList<>());
+        return pathToRecursive(target, root);
     }
 
-    private @Nullable List<Boolean> pathToRecursive(Node<T> target, Node<T> current, List<Boolean> previousDecisions) {
+    private @Nullable List<Boolean> pathToRecursive(Node<T> target, Node<T> current) {
         if (current.equals(target)) {
-            return previousDecisions;
+            return new ArrayList<>();
         }
 
         List<Boolean> ret;
 
         if (current.isBranch()) {
             // Explore yes branch
-            List<Boolean> decisions = new ArrayList<>(previousDecisions);
-            decisions.add(true);
-            ret = pathToRecursive(target, current.getYesBranch(), decisions);
+            ret = pathToRecursive(target, current.getYesBranch());
 
             // Early return if found in yes branch
             if (ret != null) {
+                ret.add(0, true);
                 return ret;
             }
 
             // Explore no branch
-            decisions = new ArrayList<>(previousDecisions);
-            decisions.add(false);
-            ret = pathToRecursive(target, current.getNoBranch(), decisions);
+            ret = pathToRecursive(target, current.getNoBranch());
 
             // Return no branch
-            return ret;
+            if (ret != null) {
+                ret.add(0, false);
+                return ret;
+            }
         }
 
         return null;

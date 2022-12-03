@@ -2,10 +2,15 @@ package animal.app;
 
 import animal.base.Animal;
 import animal.base.DecisionTree;
+import animal.base.Node;
 import animal.linguistics.clause.Statement;
 import animal.utils.greet.Greeter;
 import animal.utils.greet.TimedGreeter;
 import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.StringJoiner;
 
 import static animal.app.AskerRegistry.*;
 
@@ -19,11 +24,18 @@ public class Application implements Runnable {
     public void run() {
         start();
 
-        while (true) {
+        boolean running = true;
+        replayAsker.setContext("Would you like to play again?");
+        while (running) {
             guess();
 
             allKnowledge();
+
+            running = replayAsker.get();
+            System.out.println();
         }
+
+        end();
     }
 
     private void start() {
@@ -43,6 +55,11 @@ public class Application implements Runnable {
         System.out.println("You think of an animal, and I guess it.");
         confirmationAsker.setContext("Press enter when you're ready.");
         confirmationAsker.get();
+        System.out.println();
+    }
+
+    private void end() {
+        greeter.goodbye();
     }
 
     private void guess() {
@@ -62,9 +79,33 @@ public class Application implements Runnable {
 
     private void allKnowledge() {
         // Animal facts
-        System.out.print("I have learned the following facts about animals:");
+        System.out.println("I have learned the following facts about animals:");
 
+        for (Map.Entry<Animal, Collection<Statement>> entry : tree.allKnowledge().asMap().entrySet()) {
+            StringJoiner joiner = new StringJoiner(" ");
 
+            // Add animal noun with definite article to joiner
+            for (Statement statement : entry.getValue()) {
+                joiner.add(statement.withSubject(
+                        entry.getKey().getSpecies().withArticle(true)
+                ).toString());
+            }
+
+            System.out.println("  - " + joiner);
+        }
+
+        // All questions
+        System.out.println("I can distinguish these animals by asking the questions:");
+
+        for (Node<Animal> node : tree) {
+            if (node.isBranch()) {
+                System.out.println("  - " + node.tryGetAsBranch().get().getStatement().toQuestion());
+            }
+        }
+
+        // Conclusion
+        System.out.println("Nice! I've learned so much about animals!");
+        System.out.println();
     }
 
     private void learnNewAnimal(DecisionTree<Animal>.LeafNode wrongGuess) {

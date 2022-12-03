@@ -103,6 +103,15 @@ public abstract class AskerRegistry {
             .retryPhraseSupplier(retryPhraseSupplier)
             .build();
 
+    public static final Asker<Boolean, String> replayAsker = AskerBuilder.builder(String.class)
+            .queryContextTransformer((String s) -> s)
+            .addTransformer(String::strip)
+            .addPredicate((String s) -> !s.isBlank())
+            .addTransformer(yesNoProcessor)
+            .persistent(true)
+            .retryPhraseSupplier(retryPhraseSupplier)
+            .build();
+
     /**
      * Asks whether a statement is correct for an animal.
      */
