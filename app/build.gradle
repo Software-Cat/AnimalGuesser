@@ -6,6 +6,7 @@
 
 plugins {
     id 'AnimalGuesser.java-application-conventions'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
 dependencies {
@@ -21,4 +22,8 @@ dependencies {
 application {
     // Define the main class for the application.
     mainClass = 'animal.app.Main'
+}
+
+shadowJar {
+
 }

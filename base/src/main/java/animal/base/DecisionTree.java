@@ -335,7 +335,7 @@ public class DecisionTree<T> implements Iterable<Node<T>> {
             mapper.registerSubtypes(Animal.class);
         }
 
-        public String fileName = "./data/animals.json";
+        public String fileName = "./animals.json";
 
         public void write() throws IOException {
             writeTo(new File(fileName));
