@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/AnimalGuesser.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/AnimalGuesser.app.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/base/AnimalGuesser.base.main.iml" filepath="$PROJECT_DIR$/.idea/modules/base/AnimalGuesser.base.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/base/AnimalGuesser.base.test.iml" filepath="$PROJECT_DIR$/.idea/modules/base/AnimalGuesser.base.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/input/AnimalGuesser.input.main.iml" filepath="$PROJECT_DIR$/.idea/modules/input/AnimalGuesser.input.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/linguistics/AnimalGuesser.linguistics.main.iml" filepath="$PROJECT_DIR$/.idea/modules/linguistics/AnimalGuesser.linguistics.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/linguistics/AnimalGuesser.linguistics.test.iml" filepath="$PROJECT_DIR$/.idea/modules/linguistics/AnimalGuesser.linguistics.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/utils/AnimalGuesser.utils.main.iml" filepath="$PROJECT_DIR$/.idea/modules/utils/AnimalGuesser.utils.main.iml" />
+    </modules>
+  </component>
+</project>

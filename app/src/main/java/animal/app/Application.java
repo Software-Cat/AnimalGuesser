@@ -15,6 +15,17 @@ public class Application implements Runnable {
 
     private final DecisionTree<Animal> tree = new DecisionTree<>();
 
+    @Override
+    public void run() {
+        start();
+
+        while (true) {
+            guess();
+
+            allKnowledge();
+        }
+    }
+
     private void start() {
         // Greeting
         greeter.hello();
@@ -49,6 +60,13 @@ public class Application implements Runnable {
         }
     }
 
+    private void allKnowledge() {
+        // Animal facts
+        System.out.print("I have learned the following facts about animals:");
+
+
+    }
+
     private void learnNewAnimal(DecisionTree<Animal>.LeafNode wrongGuess) {
         // Get animal actually thought of
         animalAsker.setContext("I give up. What animal do you have in mind?");
@@ -68,19 +86,6 @@ public class Application implements Runnable {
         } else {
             tree.addNo(wrongGuess, newFact, newAnimal);
         }
-    }
-
-    private void allKnowledge() {
-        
-    }
-
-    @Override
-    public void run() {
-        start();
-
-        guess();
-
-        allKnowledge();
     }
 
     @Deprecated

@@ -65,24 +65,17 @@ public abstract class AskerRegistry {
         s = s.toLowerCase();
         s = s.replaceFirst("\\p{Punct}", "");
         switch (s) {
-            case "y", "yes", "yeah", "yep", "sure", "right", "affirmative",
-                    "correct", "indeed", "you bet", "exactly", "you said it":
+            case "y", "yes", "yeah", "yep", "sure", "right", "affirmative", "correct", "indeed", "you bet", "exactly", "you said it" -> {
                 return true;
-            case "n", "no", "no way", "nah", "nope", "negative",
-                    "i don't think so", "yeah no":
+            }
+            case "n", "no", "no way", "nah", "nope", "negative", "i don't think so", "yeah no" -> {
                 return false;
+            }
         }
 
         throw new InputMismatchException(
                 "The input (\"%s\") cannot be converted to a valid boolean response.".formatted(s));
     };
-
-    public static final Asker<Boolean, DecisionTree<Animal>.BranchNode> branchChooser = AskerBuilder.builder((Class<DecisionTree<Animal>.BranchNode>) (Class) DecisionTree.class)
-            .queryContextTransformer((DecisionTree<Animal>.BranchNode node) -> node.getStatement().toQuestion().toString())
-            .addTransformer(String::strip)
-            .addPredicate((String s) -> !s.isBlank())
-            .addTransformer(yesNoProcessor)
-            .build();
 
     private static final Supplier<String> retryPhraseSupplier = new Supplier<>() {
 
@@ -100,6 +93,15 @@ public abstract class AskerRegistry {
             return phrases.get(random.nextInt(phrases.size()));
         }
     };
+
+    public static final Asker<Boolean, DecisionTree<Animal>.BranchNode> branchChooser = AskerBuilder.builder((Class<DecisionTree<Animal>.BranchNode>) (Class) DecisionTree.class)
+            .queryContextTransformer((DecisionTree<Animal>.BranchNode node) -> node.getStatement().toQuestion().toString())
+            .addTransformer(String::strip)
+            .addPredicate((String s) -> !s.isBlank())
+            .addTransformer(yesNoProcessor)
+            .persistent(true)
+            .retryPhraseSupplier(retryPhraseSupplier)
+            .build();
 
     /**
      * Asks whether a statement is correct for an animal.

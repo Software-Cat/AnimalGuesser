@@ -1,10 +1,15 @@
 package animal.base;
 
 import animal.linguistics.clause.Statement;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -156,6 +161,63 @@ public class DecisionTree<T> implements Iterable<Node<T>> {
         }
 
         return current.tryGetAsLeaf().get();
+    }
+
+    public Multimap<T, Statement> allKnowledge() {
+        Multimap<T, Statement> map = ArrayListMultimap.create();
+
+        TreeIterator<T> iterator = new InOrderIterator<>(this);
+
+        while (iterator.hasNext()) {
+            Node<T> current = iterator.next();
+
+            // If current node is leaf node
+            if (current.isLeaf()) {
+
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Calculates true/false paths taken to reach specified node
+     *
+     * @param target the node to reach
+     * @return list of true/false decisions
+     */
+    public List<Boolean> pathTo(Node<T> target) {
+        return pathToRecursive(target, root, new ArrayList<>());
+    }
+
+    private @Nullable List<Boolean> pathToRecursive(Node<T> target, Node<T> current, List<Boolean> previousDecisions) {
+        if (current.equals(target)) {
+            return previousDecisions;
+        }
+
+        List<Boolean> ret;
+
+        if (current.isBranch()) {
+            // Explore yes branch
+            List<Boolean> decisions = new ArrayList<>(previousDecisions);
+            decisions.add(true);
+            ret = pathToRecursive(target, current.getYesBranch(), decisions);
+
+            // Early return if found in yes branch
+            if (ret != null) {
+                return ret;
+            }
+
+            // Explore no branch
+            decisions = new ArrayList<>(previousDecisions);
+            decisions.add(false);
+            ret = pathToRecursive(target, current.getNoBranch(), decisions);
+
+            // Return no branch
+            return ret;
+        }
+
+        return null;
     }
 
     public class BranchNode extends Node<T> {

@@ -1,15 +1,14 @@
 package animal.base;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 public abstract class TreeIterator<T> implements Iterator<Node<T>> {
 
-    protected final Deque<Node<T>> traversal;
+    protected final LinkedList<Node<T>> traversal;
 
-    public TreeIterator(DecisionTree<T> tree) {
-        traversal = new ArrayDeque<>();
+    public TreeIterator(Node<T> node) {
+        traversal = new LinkedList<>();
     }
 
     @Override
