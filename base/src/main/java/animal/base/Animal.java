@@ -1,9 +1,11 @@
 package animal.base;
 
 import animal.linguistics.phrase.NounPhrase;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
+@EqualsAndHashCode
 public class Animal {
 
     @NotNull

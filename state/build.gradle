@@ -1,0 +1,12 @@
+plugins {
+    id 'AnimalGuesser.java-library-conventions'
+}
+
+dependencies {
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+
+    implementation project(':linguistics')
+    implementation project(':input')
+    implementation project(':base')
+    implementation project(':utils')
+}

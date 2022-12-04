@@ -9,4 +9,4 @@
  */
 
 rootProject.name = 'AnimalGuesser'
-include('app', 'linguistics', 'input', 'utils', 'base')
+include('app', 'linguistics', 'input', 'utils', 'base', 'state')

@@ -4,8 +4,11 @@ import animal.base.Animal;
 import animal.base.DecisionTree;
 import animal.base.Node;
 import animal.linguistics.clause.Statement;
+import animal.state.base.ApplicationBase;
+import animal.state.base.StateMachine;
 import animal.utils.greet.Greeter;
 import animal.utils.greet.TimedGreeter;
+import lombok.Getter;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
@@ -13,16 +16,25 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.StringJoiner;
 
-import static animal.app.AskerRegistry.*;
+import static animal.state.AskerRegistry.*;
 
-public class Application implements Runnable {
+public class Application implements ApplicationBase {
 
+    @Deprecated
     private final Greeter greeter = new TimedGreeter();
 
+    @Getter
     private final DecisionTree<Animal> tree = new DecisionTree<>();
+
+    private final StateMachine stateMachine = new StateMachine(this);
 
     @Override
     public void run() {
+        stateMachine.run();
+    }
+
+    @Deprecated
+    public void runOld() {
         if (tree.serializer().fileExists()) {
             startOldUser();
         } else {

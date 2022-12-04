@@ -5,11 +5,13 @@ import animal.linguistics.prop.Gender;
 import animal.linguistics.prop.Number;
 import animal.linguistics.prop.Person;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+@EqualsAndHashCode
 public class NounPhrase implements animal.linguistics.partofspeech.Noun {
 
     @NotNull

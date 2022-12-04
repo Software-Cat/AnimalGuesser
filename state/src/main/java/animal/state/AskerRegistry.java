@@ -1,4 +1,4 @@
-package animal.app;
+package animal.state;
 
 import animal.base.Animal;
 import animal.base.DecisionTree;
@@ -6,12 +6,10 @@ import animal.input.Asker;
 import animal.input.AskerBuilder;
 import animal.linguistics.clause.Statement;
 import animal.linguistics.phrase.NounPhrase;
+import animal.state.base.SelectableState;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.InputMismatchException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -40,7 +38,7 @@ public abstract class AskerRegistry {
     /**
      * Asks for a statement describing an animal.
      */
-    public static final Asker<Statement, Pair<Animal, Animal>> statementAsker = AskerBuilder.builder((Class<Pair<Animal, Animal>>) (Class<?>) Pair.class)
+    public static final Asker<Statement, Pair<Animal, Animal>> statementAsker = AskerBuilder.builder((Class<Pair<Animal, Animal>>) (Class) Pair.class)
             .queryContextTransformer((Pair<Animal, Animal> animals) -> """
                     Specify a fact that distinguishes %s from %s.
                     The sentence should be of the format: 'It can/has/is ...'.
@@ -59,6 +57,29 @@ public abstract class AskerRegistry {
                             Specify a fact that distinguishes a cat from a shark.
                             The sentence should be of the format: 'It can/has/is ...'."""
             )
+            .build();
+
+    /**
+     * Asks for next state
+     */
+    public static final Asker<SelectableState, List<SelectableState>> nextStateAsker = AskerBuilder.builder((Class<List<SelectableState>>) (Class) List.class)
+            .queryContextTransformer((List<SelectableState> selectableStates) -> {
+                // Header
+                StringJoiner joiner = new StringJoiner("\n");
+                joiner.add("What do you want to do:");
+
+                // States
+                ListIterator<SelectableState> it = selectableStates.listIterator();
+                while (it.hasNext()) {
+                    joiner.add(it.nextIndex() + ". " + it.next().getDescription());
+                }
+
+                return joiner.toString();
+            })
+            .addTransformer(String::trim)
+            .addTransformer((String s) -> Integer.parseInt(s))
+            .addTransformer((Integer n, List<SelectableState> ctx) -> ctx.get(n))
+            .persistent(true)
             .build();
 
     private static final Function<String, Boolean> yesNoProcessor = (String s) -> {

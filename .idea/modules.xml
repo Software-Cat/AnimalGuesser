@@ -8,7 +8,9 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/input/AnimalGuesser.input.main.iml" filepath="$PROJECT_DIR$/.idea/modules/input/AnimalGuesser.input.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/linguistics/AnimalGuesser.linguistics.main.iml" filepath="$PROJECT_DIR$/.idea/modules/linguistics/AnimalGuesser.linguistics.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/linguistics/AnimalGuesser.linguistics.test.iml" filepath="$PROJECT_DIR$/.idea/modules/linguistics/AnimalGuesser.linguistics.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/state/AnimalGuesser.state.main.iml" filepath="$PROJECT_DIR$/.idea/modules/state/AnimalGuesser.state.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/utils/AnimalGuesser.utils.main.iml" filepath="$PROJECT_DIR$/.idea/modules/utils/AnimalGuesser.utils.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/utils/AnimalGuesser.utils.test.iml" filepath="$PROJECT_DIR$/.idea/modules/utils/AnimalGuesser.utils.test.iml" />
     </modules>
   </component>
 </project>

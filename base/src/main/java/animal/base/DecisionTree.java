@@ -8,20 +8,21 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import lombok.Getter;
+import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class DecisionTree<T> implements Iterable<Node<T>> {
 
+    @Getter()
+    @Accessors(fluent = true)
+    private final Serializer serializer = new Serializer();
     public Node<T> root;
 
     public DecisionTree() {
@@ -170,6 +171,31 @@ public class DecisionTree<T> implements Iterable<Node<T>> {
         return current.tryGetAsLeaf().get();
     }
 
+    public @NotNull List<Statement> statementsAbout(@Nullable T object) {
+        return Objects.requireNonNullElseGet(statementsAboutRecursive(object, root), List::of);
+    }
+
+    public @Nullable List<Statement> statementsAboutRecursive(@Nullable T object, Node<T> current) {
+        if (current.isLeaf() && current.tryGetAsLeaf().get().tryGetValue().get().equals(object)) {
+            return new ArrayList<>();
+        } else if (current.isBranch()) {
+            DecisionTree.BranchNode<T> currentBranch = current.tryGetAsBranch().get();
+
+            List<Statement> fromYes = statementsAboutRecursive(object, current.getYesBranch());
+            List<Statement> fromNo = statementsAboutRecursive(object, current.getNoBranch());
+
+            if (fromYes != null) {
+                fromYes.add(currentBranch.statement);
+                return fromYes;
+            } else if (fromNo != null) {
+                fromNo.add(currentBranch.statement.negative());
+                return fromNo;
+            }
+        }
+
+        return null;
+    }
+
     public Multimap<T, Statement> allKnowledge() {
         Multimap<Statement, T> map = ArrayListMultimap.create();
         allKnowledgeRecursive(root, map);
@@ -246,10 +272,6 @@ public class DecisionTree<T> implements Iterable<Node<T>> {
         return null;
     }
 
-    public Serializer serializer() {
-        return new Serializer();
-    }
-
     public static class BranchNode<U> extends Node<U> {
 
         @Getter
@@ -269,7 +291,6 @@ public class DecisionTree<T> implements Iterable<Node<T>> {
             this.statement = statement;
             setNoBranch(noBranch);
             setYesBranch(yesBranch);
-            System.out.println(getClass().toString());
         }
 
         @Override
@@ -350,9 +371,7 @@ public class DecisionTree<T> implements Iterable<Node<T>> {
         }
 
         public void writeTo(File file) throws IOException {
-            mapper
-                    .writerWithDefaultPrettyPrinter()
-                    .writeValue(file, root);
+            mapper.writeValue(file, root);
         }
 
         public void readFrom(File file) throws IOException {

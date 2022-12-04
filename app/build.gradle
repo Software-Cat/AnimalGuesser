@@ -17,6 +17,7 @@ dependencies {
     implementation project(':input')
     implementation project(':base')
     implementation project(':utils')
+    implementation project(':state')
 }
 
 application {
