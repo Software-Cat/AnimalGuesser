@@ -86,7 +86,7 @@ public abstract class AskerRegistry {
         s = s.toLowerCase();
         s = s.replaceFirst("\\p{Punct}", "");
         switch (s) {
-            case "y", "yes", "yeah", "yep", "sure", "right", "affirmative", "correct", "indeed", "you bet", "exactly", "you said it" -> {
+            case "y", "ye", "yes", "yeah", "yep", "sure", "right", "affirmative", "correct", "indeed", "you bet", "exactly", "you said it" -> {
                 return true;
             }
             case "n", "no", "no way", "nah", "nope", "negative", "i don't think so", "yeah no" -> {
@@ -124,7 +124,7 @@ public abstract class AskerRegistry {
             .retryPhraseSupplier(retryPhraseSupplier)
             .build();
 
-    public static final Asker<Boolean, String> replayAsker = AskerBuilder.builder(String.class)
+    public static final Asker<Boolean, String> booleanAsker = AskerBuilder.builder(String.class)
             .queryContextTransformer((String s) -> s)
             .addTransformer(String::strip)
             .addPredicate((String s) -> !s.isBlank())

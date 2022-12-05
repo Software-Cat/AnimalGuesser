@@ -10,13 +10,7 @@ plugins {
 }
 
 dependencies {
-    implementation 'org.apache.commons:commons-lang3:3.12.0'
-    implementation 'com.google.guava:guava:31.1-jre'
-
-    implementation project(':linguistics')
-    implementation project(':input')
     implementation project(':base')
-    implementation project(':utils')
     implementation project(':state')
 }
 

@@ -13,7 +13,7 @@ public class PrintTreeState extends SelectableState {
 
     @Override
     protected @NotNull AppState nextState(@NotNull ApplicationBase app) {
-        return null;
+        return new SelectorState();
     }
 
     @Override

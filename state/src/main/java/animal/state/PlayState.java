@@ -19,8 +19,8 @@ public class PlayState extends SelectableState {
 
     @Override
     protected @NotNull AppState nextState(@NotNull ApplicationBase app) {
-        replayAsker.setContext("Would you like to play again?");
-        if (replayAsker.get()) {
+        booleanAsker.setContext("Would you like to play again?");
+        if (booleanAsker.get()) {
             return new PlayState();
         } else {
             System.out.println();

@@ -9,6 +9,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
+import static animal.state.AskerRegistry.booleanAsker;
+
 public class ExitState extends SelectableState {
 
     private final Greeter greeter = new TimedGreeter();
@@ -28,13 +30,16 @@ public class ExitState extends SelectableState {
 
     @Override
     public void execute(@NotNull ApplicationBase app) {
-        greeter.goodbye();
-
         // Serialize tree
-        try {
-            app.getTree().serializer().write();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        booleanAsker.setContext("Save changes?");
+        if (booleanAsker.get()) {
+            try {
+                app.getTree().serializer().write();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
+
+        greeter.goodbye();
     }
 }

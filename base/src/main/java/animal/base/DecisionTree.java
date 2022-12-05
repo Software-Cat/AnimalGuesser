@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import lombok.Getter;
@@ -171,11 +172,30 @@ public class DecisionTree<T> implements Iterable<Node<T>> {
         return current.tryGetAsLeaf().get();
     }
 
+    public @NotNull Multimap<Integer, Node<T>> stratified() {
+        Multimap<Integer, Node<T>> strata = HashMultimap.create();
+
+        if (root != null) {
+            stratifiedRecursive(root, strata, 1);
+        }
+
+        return strata;
+    }
+
+    private void stratifiedRecursive(Node<T> current, Multimap<Integer, Node<T>> strata, int depth) {
+        strata.put(depth, current);
+
+        if (current.isBranch()) {
+            stratifiedRecursive(current.getYesBranch(), strata, depth + 1);
+            stratifiedRecursive(current.getNoBranch(), strata, depth + 1);
+        }
+    }
+
     public @NotNull List<Statement> statementsAbout(@Nullable T object) {
         return Objects.requireNonNullElseGet(statementsAboutRecursive(object, root), List::of);
     }
 
-    public @Nullable List<Statement> statementsAboutRecursive(@Nullable T object, Node<T> current) {
+    private @Nullable List<Statement> statementsAboutRecursive(@Nullable T object, Node<T> current) {
         if (current.isLeaf() && current.tryGetAsLeaf().get().tryGetValue().get().equals(object)) {
             return new ArrayList<>();
         } else if (current.isBranch()) {
@@ -309,6 +329,11 @@ public class DecisionTree<T> implements Iterable<Node<T>> {
         }
 
         @Override
+        public String toString() {
+            return statement.toQuestion().toString();
+        }
+
+        @Override
         public Optional<LeafNode<U>> tryGetAsLeaf() {
             return Optional.empty();
         }
@@ -340,6 +365,14 @@ public class DecisionTree<T> implements Iterable<Node<T>> {
         @Override
         public void setNoBranch(Node<U> noBranch) {
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String toString() {
+            if (tryGetValue().isEmpty()) {
+                return "";
+            }
+            return tryGetValue().get().toString();
         }
 
         @Override

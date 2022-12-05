@@ -29,7 +29,7 @@ public class Statement extends MainClause {
             return null;
         }
 
-        statement = statement.replaceAll("\\p{Punct}", " ");
+        statement = statement.replaceAll("([.,])", " ");
         List<String> words = List.of(statement.split("\\s+"));
 
         Noun subject = Pronoun.parsePronoun(words.get(0));
