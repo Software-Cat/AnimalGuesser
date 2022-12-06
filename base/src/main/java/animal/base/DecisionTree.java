@@ -144,6 +144,42 @@ public class DecisionTree<T> implements Iterable<Node<T>> {
         return addNoRecursive(root, target, statement, value);
     }
 
+    @Override
+    public String toString() {
+        List<String> treeLines = toStringRecursive(root);
+        treeLines = treeLines.stream().map(s -> "  " + s).collect(Collectors.toList());
+        treeLines.set(0, treeLines.get(0).replaceFirst("  ", " └"));
+
+        return String.join("\n", treeLines);
+    }
+
+    private List<String> toStringRecursive(Node<T> current) {
+        if (current.isLeaf()) {
+            return new ArrayList<>(List.of(" " + current));
+        } else { // Is branch
+            // Get child branches
+            List<String> yes = toStringRecursive(current.getYesBranch());
+            List<String> no = toStringRecursive(current.getNoBranch());
+
+            // Current branch node question
+            String question = current.toString();
+
+            // Indent child branches
+            yes = yes.stream().map((s -> "|" + s)).collect(Collectors.toList());
+            no = no.stream().map((s -> " " + s)).collect(Collectors.toList());
+            // Correct first line of branches with "├" and "└"
+            yes.set(0, yes.get(0).replaceFirst("\\|", "├"));
+            no.set(0, no.get(0).replaceFirst(" ", "└"));
+
+            // Join statement, yes, no
+            List<String> ret = new ArrayList<>();
+            ret.add(" " + question);
+            ret.addAll(yes);
+            ret.addAll(no);
+            return ret;
+        }
+    }
+
     @NotNull
     @Override
     public Iterator<Node<T>> iterator() {
@@ -176,7 +212,7 @@ public class DecisionTree<T> implements Iterable<Node<T>> {
         Multimap<Integer, Node<T>> strata = HashMultimap.create();
 
         if (root != null) {
-            stratifiedRecursive(root, strata, 1);
+            stratifiedRecursive(root, strata, 0);
         }
 
         return strata;

@@ -18,6 +18,7 @@ public class PrintTreeState extends SelectableState {
 
     @Override
     public void execute(@NotNull ApplicationBase app) {
-
+        System.out.println(app.getTree().toString());
+        System.out.println();
     }
 }

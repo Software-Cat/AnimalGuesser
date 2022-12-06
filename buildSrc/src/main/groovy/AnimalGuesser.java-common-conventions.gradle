@@ -33,3 +33,7 @@ testing {
         }
     }
 }
+
+java {
+    version = 19
+}
